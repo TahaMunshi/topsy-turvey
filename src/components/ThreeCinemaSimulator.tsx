@@ -23,6 +23,7 @@ export interface ThreeCinemaSimulatorProps {
   reclineAngle: number;
   laserConeVisible: boolean;
   resetTrigger: number;
+  focusZone?: "table" | "maze" | "toddler" | "trampoline";
   takenSeatFlashTrigger?: number;
   trailerMuted?: boolean;
   showHelperTooltip?: boolean;
@@ -38,6 +39,7 @@ export const ThreeCinemaSimulator: React.FC<ThreeCinemaSimulatorProps> = ({
   lightingMode,
   audienceVisible,
   resetTrigger,
+  focusZone = "table",
   showHelperTooltip = false,
   onSelectSeat,
 }) => {
@@ -49,6 +51,7 @@ export const ThreeCinemaSimulator: React.FC<ThreeCinemaSimulatorProps> = ({
     cameraMode,
     lightingMode,
     audienceVisible,
+    focusZone,
     venue,
     selectedMovie,
   });
@@ -60,6 +63,7 @@ export const ThreeCinemaSimulator: React.FC<ThreeCinemaSimulatorProps> = ({
       cameraMode,
       lightingMode,
       audienceVisible,
+      focusZone,
       venue,
       selectedMovie,
     };
@@ -69,6 +73,7 @@ export const ThreeCinemaSimulator: React.FC<ThreeCinemaSimulatorProps> = ({
     cameraMode,
     lightingMode,
     audienceVisible,
+    focusZone,
     venue,
     selectedMovie,
   ]);
@@ -674,15 +679,26 @@ export const ThreeCinemaSimulator: React.FC<ThreeCinemaSimulatorProps> = ({
 
       // Update Camera
       if (st.cameraMode === "pov") {
-        const sp = getSeatSpatialData(st.activeSeat, st.venue);
-        targetCamPos.set(sp.x, sp.eyeHeight + 0.15, sp.z + 0.35);
         const yaw = cameraStateRef.current.yawOffset;
         const pitch = cameraStateRef.current.pitchOffset;
-        targetLookAt.set(
-          sp.x + Math.sin(yaw) * 10,
-          2.2 + Math.sin(pitch) * 6,
-          -4.5 + (1 - Math.cos(yaw)) * 4
-        );
+        if (st.focusZone === "maze") {
+          targetCamPos.set(0, 3.2, 1.0);
+          targetLookAt.set(Math.sin(yaw) * 6, 2.2 + Math.sin(pitch) * 4, -4.5);
+        } else if (st.focusZone === "toddler") {
+          targetCamPos.set(-8.2, 2.6, 0.8);
+          targetLookAt.set(-8.5 + Math.sin(yaw) * 6, 1.2 + Math.sin(pitch) * 4, -4.5);
+        } else if (st.focusZone === "trampoline") {
+          targetCamPos.set(8.2, 2.8, 0.8);
+          targetLookAt.set(8.5 + Math.sin(yaw) * 6, 1.8 + Math.sin(pitch) * 4, -4.5);
+        } else {
+          const sp = getSeatSpatialData(st.activeSeat, st.venue);
+          targetCamPos.set(sp.x, sp.eyeHeight + 0.15, sp.z + 0.35);
+          targetLookAt.set(
+            sp.x + Math.sin(yaw) * 10,
+            2.2 + Math.sin(pitch) * 6,
+            -4.5 + (1 - Math.cos(yaw)) * 4
+          );
+        }
       } else {
         const { orbitTheta, orbitPhi, orbitRadius } = cameraStateRef.current;
         targetCamPos.set(

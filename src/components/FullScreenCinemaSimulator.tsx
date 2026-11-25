@@ -53,6 +53,7 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
   const topPillRef = useRef<HTMLDivElement | null>(null);
   const [lightingMode, setLightingMode] = useState<"dimmed" | "house">("house");
   const [cameraMode, setCameraMode] = useState<"pov" | "overview">("pov");
+  const [focusZone, setFocusZone] = useState<"table" | "maze" | "toddler" | "trampoline">("table");
   const [trailerMuted, setTrailerMuted] = useState<boolean>(true);
   const [isHudIdle, setIsHudIdle] = useState<boolean>(false);
   const [blockedSeatNotice, setBlockedSeatNotice] = useState<{
@@ -205,6 +206,7 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
           reclineAngle={0}
           laserConeVisible={false}
           resetTrigger={0}
+          focusZone={focusZone}
           takenSeatFlashTrigger={blockedSeatNotice?.nonce ?? 0}
           trailerMuted={trailerMuted}
           showHelperTooltip={false}
@@ -661,13 +663,45 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
 
       {/* Single Compact Bottom Booking Dock */}
       <div
-        className={`absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 w-[95%] sm:w-[94%] max-w-xl z-30 transition-all duration-700 ease-out ${
+        className={`absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 w-[95%] sm:w-[94%] max-w-xl z-30 transition-all duration-700 ease-out flex flex-col items-center gap-2 ${
           isHudIdle
             ? "opacity-0 translate-y-3 pointer-events-none"
             : "opacity-100 translate-y-0"
         }`}
       >
-        <div className="bg-[#0d0e12]/85 backdrop-blur-2xl border border-white/10 rounded-full p-1.5 sm:p-2 pl-3.5 sm:pl-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex items-center justify-between gap-2 sm:gap-3">
+        {/* Quick 3D Zone Camera Presets */}
+        <div className="flex items-center gap-1 bg-[#0d0e12]/85 backdrop-blur-xl border border-white/10 p-1 rounded-full shadow-lg overflow-x-auto max-w-full no-scrollbar">
+          {(
+            [
+              { id: "table", label: `Table ${activeSeat} POV` },
+              { id: "maze", label: "Soft-Play Maze" },
+              { id: "toddler", label: "Toddler Ball Pit" },
+              { id: "trampoline", label: "Trampoline" },
+            ] as const
+          ).map((z) => {
+            const active = cameraMode === "pov" && focusZone === z.id;
+            return (
+              <button
+                key={z.id}
+                type="button"
+                onClick={() => {
+                  soundEngine.playSeatClick(false);
+                  setCameraMode("pov");
+                  setFocusZone(z.id);
+                }}
+                className={`px-2.5 py-1 rounded-full text-[10px] font-mono whitespace-nowrap transition-all cursor-pointer ${
+                  active
+                    ? "bg-amber-400 text-[#09090b] font-bold"
+                    : "text-zinc-300 hover:text-white hover:bg-white/[0.06]"
+                }`}
+              >
+                {z.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="w-full bg-[#0d0e12]/85 backdrop-blur-2xl border border-white/10 rounded-full p-1.5 sm:p-2 pl-3.5 sm:pl-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex items-center justify-between gap-2 sm:gap-3">
           {/* Left: Current Viewing Seat & Total */}
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">

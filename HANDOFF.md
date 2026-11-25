@@ -70,9 +70,9 @@ npm run lint                                     # ESLint check
 | [src/pages/home/index.tsx](src/pages/home/index.tsx) | Main app shell, 3-pill floating header, currency toggle (`PKR`/`USD`), wing switcher, view state (`gallery` \| `overview` \| `seats` \| `3d-preview` \| `snacks`). |
 | [src/components/FilmReelGallery.tsx](src/components/FilmReelGallery.tsx) | Stage 1: Interactive Play Zone carousel & left quick-select sidebar. |
 | [src/components/MovieOverviewView.tsx](src/components/MovieOverviewView.tsx) | Stage 2: Selected Play Zone details, Zone Highlights, and CTA to 2D Map or 3D Sightline. |
-| [src/components/SeatSelectionView.tsx](src/components/SeatSelectionView.tsx) | Stage 3: 2D 2nd-Floor Playland Zone Map + Parent Café Supervision Table selector (`A1`–`F8`) + 11 AM–11 PM time slots with crowd levels. |
-| [src/components/ThreeCinemaSimulator.tsx](src/components/ThreeCinemaSimulator.tsx) | Three.js 3D Playland & Parent-Sightline Explorer (Soft-Play Maze, Toddler Ball Pit & Mini Kitchens, Trampoline & Climbing Wall, glass partition, 48 interactive Café Tables, Daylight vs. Party Glow lighting). |
-| [src/components/FullScreenCinemaSimulator.tsx](src/components/FullScreenCinemaSimulator.tsx) | Stage 4: Full-screen HUD wrapper for the 3D Explorer (date/slot/crowd dropdowns, Daylight/Party Glow toggle, Table Sightline POV vs. 3D Playland Orbit, table switcher modal). |
+| [src/components/SeatSelectionView.tsx](src/components/SeatSelectionView.tsx) | Stage 3: Interactive 2nd-Floor Playland Zone Map (click a zone to highlight best-sightline Café Tables), 2nd-floor landmarks (Check-In/Socks Desk & Espresso Bar), Parent Café Supervision Table selector (`A1`–`F8`), and 11 AM–11 PM time slots with crowd levels. |
+| [src/components/ThreeCinemaSimulator.tsx](src/components/ThreeCinemaSimulator.tsx) | Three.js 3D Playland & Parent-Sightline Explorer (Soft-Play Maze, Toddler Ball Pit & Mini Kitchens, Trampoline & Climbing Wall, glass partition, 48 interactive Café Tables, Daylight vs. Party Glow lighting, plus `focusZone` camera presets). |
+| [src/components/FullScreenCinemaSimulator.tsx](src/components/FullScreenCinemaSimulator.tsx) | Stage 4: Full-screen HUD wrapper for the 3D Explorer (date/slot/crowd dropdowns, Daylight/Party Glow toggle, quick 3D Zone Camera Presets, Table Sightline POV vs. 3D Playland Orbit, table switcher modal). |
 | [src/components/SnackSelectionView.tsx](src/components/SnackSelectionView.tsx) | Stage 5: Add-ons & Parent Café menu (`Safety & Gear`, `Activities`, `Parent Café`) + order summary. |
 | [src/components/CheckoutModal.tsx](src/components/CheckoutModal.tsx) | Checkout modal with `VOUCH365` / `BOGO` / `PACKAGES10` promo codes, payment method selector (JazzCash, EasyPaisa, RAAST, Card / Stripe, PayPal, Apple Pay), and deterministic QR Digital Pass. |
 | [src/components/LoadingSplashScreen.tsx](src/components/LoadingSplashScreen.tsx) | Branded splash loader with Packages Mall location & phone numbers. |
@@ -89,8 +89,7 @@ npm run lint                                     # ESLint check
 2. **Replace Stock Photography:**
    * Replace all Unsplash URLs in [src/constants/cinemaData.ts](src/constants/cinemaData.ts) with real, high-res photos of Topsy Turvy Packages Mall (stored in `public/images/zones/` and `public/images/cafe/`).
    * Add the official Topsy Turvy logo in `public/images/` and [FuturisticLogo.tsx](src/components/FuturisticLogo.tsx).
-3. **Fix Remaining Copy Leaks:**
-   * In [src/components/CheckoutModal.tsx](src/components/CheckoutModal.tsx), update the WhatsApp share message strings (`Movie:` → `Play Zone:`, `Showtime:` → `Time Slot:`) and replace the fallback `alex.vance@cinema.com` placeholder.
+3. **Checkout Copy:** *(Completed)* WhatsApp share strings and contact fallbacks in [src/components/CheckoutModal.tsx](src/components/CheckoutModal.tsx) are updated to Topsy Turvy Playland terminology.
 
 ### Phase 2: Booking & Pricing Model (Core Business Logic)
 1. **Decouple Child Play Passes from Parent Café Tables:**
@@ -106,13 +105,11 @@ npm run lint                                     # ESLint check
    * Confirm exact PKR prices and Vouch365 terms (e.g., valid weekdays only vs. all week, max BOGO redemptions per visit) with Topsy Turvy management.
 
 ### Phase 3: 2D Map & 3D Explorer Polish
-1. **2D Map ([src/components/SeatSelectionView.tsx](src/components/SeatSelectionView.tsx)):**
-   * Highlight recommended Café Tables based on the selected Play Zone (e.g., `A1–B4` for Toddler Ball Pit, `C3–D6` for Soft-Play Maze).
-   * Add 2D landmarks: **Reception / Check-in**, **Shoe & Sock Counter**, **Espresso Bar**, and **Party Deck**.
-2. **3D Playland Explorer ([src/components/ThreeCinemaSimulator.tsx](src/components/ThreeCinemaSimulator.tsx)):**
-   * Add floating 3D labels (`CSS3DObject` or sprite badges) above each zone.
-   * Add quick-jump camera presets (*Maze View*, *Toddler Wing*, *Trampoline*, *Parent Café*).
-   * Add subtle ambient animations (bouncing ball-pit spheres, gentle character motion) and a visual sightline cone from the active Café Table.
+1. **2D Map ([src/components/SeatSelectionView.tsx](file:///d:/Projects/topsy-turvey/src/components/SeatSelectionView.tsx)):**
+   * *(Completed)* Interactive zone buttons highlight best-sightline Café Tables (`A1–B4` for Toddler Ball Pit, `C3–D6` for Soft-Play Maze, `A5–B8` for Trampoline) and display 2nd-floor landmarks (Check-In/Grip Socks Desk & Espresso Bar).
+2. **3D Playland Explorer ([src/components/ThreeCinemaSimulator.tsx](file:///d:/Projects/topsy-turvey/src/components/ThreeCinemaSimulator.tsx)):**
+   * *(Completed)* Quick 3D zone camera presets (`Table POV`, `Soft-Play Maze`, `Toddler Ball Pit`, `Trampoline`) are live in the 3D Explorer HUD.
+   * **Remaining:** Add floating 3D zone labels (`CSS3DObject` or sprite badges), subtle ambient animations (bouncing ball-pit spheres, gentle character motion), and a visual sightline cone from the active Café Table.
 
 ### Phase 4: Backend, Payments & Legacy Cleanup
 1. **Backend & Live Inventory:**

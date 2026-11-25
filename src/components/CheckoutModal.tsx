@@ -95,7 +95,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     isUSD ? "Alexander Vance" : "Taha Jawed"
   );
   const [guestContact, setGuestContact] = useState<string>(
-    isUSD ? "alex.vance@cinema.com" : "0300-8219402"
+    isUSD ? "parent@topsyturvy.pk" : "0300-8219402"
   );
   const [walletAdded, setWalletAdded] = useState<boolean>(false);
   const [promoInput, setPromoInput] = useState<string>("");
@@ -106,11 +106,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     if (isUSD) {
       setPaymentMethod("STRIPE");
       setGuestName((prev) => (prev === "Taha Jawed" ? "Alexander Vance" : prev));
-      setGuestContact((prev) => (prev === "0300-8219402" ? "alex.vance@cinema.com" : prev));
+      setGuestContact((prev) => (prev === "0300-8219402" ? "parent@topsyturvy.pk" : prev));
     } else {
       setPaymentMethod("JAZZCASH");
       setGuestName((prev) => (prev === "Alexander Vance" ? "Taha Jawed" : prev));
-      setGuestContact((prev) => (prev === "alex.vance@cinema.com" ? "0300-8219402" : prev));
+      setGuestContact((prev) => (prev === "parent@topsyturvy.pk" ? "0300-8219402" : prev));
     }
   }, [isUSD, venue.id]);
 
@@ -556,11 +556,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="button"
                     onClick={() => {
                       const shareText = encodeURIComponent(
-                        `*${venue.name} VIP Admission Pass*\n` +
-                          `Movie: ${selectedMovie.title}\n` +
-                          `Hall: ${venue.hallName}\n` +
-                          `Showtime: ${selectedDate} @ ${selectedMovie.selectedTime}\n` +
-                          `Seats: ${selectedSeats.join(", ")}\n` +
+                        `*${venue.name} Digital Playland Pass*\n` +
+                          `Play Zone: ${selectedMovie.title}\n` +
+                          `Location: Packages Mall (2nd Floor)\n` +
+                          `Time Slot: ${selectedDate} @ ${selectedMovie.selectedTime}\n` +
+                          `Café Tables: ${selectedSeats.length > 0 ? selectedSeats.join(", ") : "Walk-In"}\n` +
                           `Pass Code: ${passCode}\n` +
                           `Total Paid: ${formatMoney(grandTotal)}`
                       );
@@ -589,11 +589,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   type="button"
                   onClick={() => {
                     const shareText = encodeURIComponent(
-                      `*${venue.name} Ticket Pass*\n` +
-                        `Movie: ${selectedMovie.title}\n` +
-                        `Hall: ${venue.hallName}\n` +
-                        `Showtime: ${selectedDate} @ ${selectedMovie.selectedTime}\n` +
-                        `Seats: ${selectedSeats.join(", ")}\n` +
+                      `*${venue.name} Digital Playland Pass*\n` +
+                        `Play Zone: ${selectedMovie.title}\n` +
+                        `Location: Packages Mall (2nd Floor)\n` +
+                        `Time Slot: ${selectedDate} @ ${selectedMovie.selectedTime}\n` +
+                        `Café Tables: ${selectedSeats.length > 0 ? selectedSeats.join(", ") : "Walk-In"}\n` +
                         `Pass Code: ${passCode}\n` +
                         `Total Paid: ${formatMoney(grandTotal)}`
                     );

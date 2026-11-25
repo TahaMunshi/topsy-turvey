@@ -57,6 +57,19 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
   const [isSeatModalOpen, setIsSeatModalOpen] = useState(false);
   const [isDateMenuOpen, setIsDateMenuOpen] = useState(false);
   const [preferredRow, setPreferredRow] = useState<string>("C");
+  const [highlightedZone, setHighlightedZone] = useState<"toddler" | "maze" | "trampoline">(
+    selectedMovie.id === "toddler-ball-pit"
+      ? "toddler"
+      : selectedMovie.id === "trampoline-climbing"
+      ? "trampoline"
+      : "maze"
+  );
+
+  const isRecommendedTable = (row: string, col: number) => {
+    if (highlightedZone === "toddler") return (row === "A" || row === "B") && col <= 4;
+    if (highlightedZone === "trampoline") return (row === "A" || row === "B") && col >= 5;
+    return (row === "C" || row === "D") && col >= 3 && col <= 6;
+  };
 
   const seatsTotal = selectedSeats.reduce((acc, id) => {
     const d = getSeatSpatialData(id, venue);
@@ -194,43 +207,58 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
       {/* 2. 2ND-FLOOR PLAYLAND FLOORPLAN + PARENT CAFÉ SUPERVISION TABLE SELECTOR */}
       <div className="relative z-10 flex-1 w-full max-w-[1320px] mx-auto flex flex-col items-center justify-between py-2">
         {/* 2nd Floor Playland Interactive Zones Banner */}
-        <div
-          onClick={onProceedToPreview}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") onProceedToPreview();
-          }}
-          title="Click to launch 3D Playland & Parent-Sightline Explorer"
-          className="relative w-full max-w-5xl flex flex-col items-center cursor-pointer group"
-        >
-          <div className="w-[96%] sm:w-[90%] grid grid-cols-3 gap-1.5 sm:gap-2.5 p-1.5 sm:p-2 rounded-2xl bg-[#121316]/85 border border-white/15 shadow-[0_14px_40px_rgba(0,0,0,0.65)] group-hover:border-amber-400/40 transition-all">
-            <div className="rounded-xl bg-emerald-500/15 border border-emerald-400/30 px-2 py-1.5 sm:py-2 text-center">
+        <div className="relative w-full max-w-5xl flex flex-col items-center">
+          <div className="w-[96%] sm:w-[90%] grid grid-cols-3 gap-1.5 sm:gap-2.5 p-1.5 sm:p-2 rounded-2xl bg-[#121316]/85 border border-white/15 shadow-[0_14px_40px_rgba(0,0,0,0.65)]">
+            <button
+              type="button"
+              onClick={() => setHighlightedZone("toddler")}
+              className={`rounded-xl px-2 py-1.5 sm:py-2 text-center transition-all cursor-pointer border ${
+                highlightedZone === "toddler"
+                  ? "bg-emerald-500/25 border-emerald-400/70 shadow-[0_0_20px_rgba(16,185,129,0.22)]"
+                  : "bg-emerald-500/10 border-emerald-400/25 hover:bg-emerald-500/20"
+              }`}
+            >
               <span className="text-[9px] sm:text-[11px] font-heading font-bold text-emerald-300 block truncate">
                 Toddler Ball Pit &amp; Mini Kitchens
               </span>
-              <span className="text-[8px] sm:text-[9px] font-mono text-emerald-200/70 hidden sm:block">
-                West Wing • Ages 1–4
+              <span className="text-[8px] sm:text-[9px] font-mono text-emerald-200/75 hidden sm:block">
+                Best Sightline: Tables A1–B4
               </span>
-            </div>
+            </button>
 
-            <div className="rounded-xl bg-amber-500/20 border border-amber-400/45 px-2 py-1.5 sm:py-2 text-center shadow-[0_0_20px_rgba(245,158,11,0.18)]">
+            <button
+              type="button"
+              onClick={() => setHighlightedZone("maze")}
+              className={`rounded-xl px-2 py-1.5 sm:py-2 text-center transition-all cursor-pointer border ${
+                highlightedZone === "maze"
+                  ? "bg-amber-500/25 border-amber-400/70 shadow-[0_0_20px_rgba(245,158,11,0.22)]"
+                  : "bg-amber-500/10 border-amber-400/25 hover:bg-amber-500/20"
+              }`}
+            >
               <span className="text-[9px] sm:text-[11px] font-heading font-bold text-amber-300 block truncate">
                 Multi-Level Soft-Play Maze
               </span>
               <span className="text-[8px] sm:text-[9px] font-mono text-amber-200/75 hidden sm:block">
-                Center Arena • Slides &amp; Tunnels
+                Best Sightline: VIP Booths C3–D6
               </span>
-            </div>
+            </button>
 
-            <div className="rounded-xl bg-sky-500/15 border border-sky-400/30 px-2 py-1.5 sm:py-2 text-center">
+            <button
+              type="button"
+              onClick={() => setHighlightedZone("trampoline")}
+              className={`rounded-xl px-2 py-1.5 sm:py-2 text-center transition-all cursor-pointer border ${
+                highlightedZone === "trampoline"
+                  ? "bg-sky-500/25 border-sky-400/70 shadow-[0_0_20px_rgba(56,189,248,0.22)]"
+                  : "bg-sky-500/10 border-sky-400/25 hover:bg-sky-500/20"
+              }`}
+            >
               <span className="text-[9px] sm:text-[11px] font-heading font-bold text-sky-300 block truncate">
                 Trampoline &amp; Climbing Wall
               </span>
-              <span className="text-[8px] sm:text-[9px] font-mono text-sky-200/70 hidden sm:block">
-                East Wing • Ages 4–12
+              <span className="text-[8px] sm:text-[9px] font-mono text-sky-200/75 hidden sm:block">
+                Best Sightline: Tables A5–B8
               </span>
-            </div>
+            </button>
           </div>
 
           <div className="flex items-center gap-2 mt-1.5">
@@ -238,9 +266,13 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
               GLASS SIGHTLINE PARTITION • PARENT CAFÉ SUPERVISION DECK
             </span>
             <span className="text-[8px] font-mono text-zinc-600 hidden sm:inline">•</span>
-            <span className="text-[9px] font-mono text-zinc-400 hidden sm:inline">
-              Free Wi-Fi • Click playland to explore in 3D
-            </span>
+            <button
+              type="button"
+              onClick={onProceedToPreview}
+              className="text-[9px] font-mono text-amber-300 hover:text-white underline underline-offset-2 hidden sm:inline cursor-pointer"
+            >
+              Launch 3D Explorer →
+            </button>
           </div>
         </div>
 
@@ -270,6 +302,7 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
                     const isReserved = PRE_RESERVED_SEATS.includes(seatId);
                     const isSelected = selectedSeats.includes(seatId);
                     const isVIP = isVIPRow && col >= 3 && col <= 6;
+                    const isBestSightline = !isReserved && !isSelected && isRecommendedTable(row, col);
 
                     return (
                       <React.Fragment key={seatId}>
@@ -285,13 +318,15 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
                           title={
                             isReserved
                               ? `Table ${seatId} Occupied`
-                              : `Table ${seatId} (${isVIP ? "VIP Sightline Booth" : "Parent Café Table"})`
+                              : `Table ${seatId} (${isVIP ? "VIP Sightline Booth" : "Parent Café Table"}${isBestSightline ? " • Best Sightline for Selected Zone" : ""})`
                           }
                           className={`group relative w-7 xs:w-8 sm:w-14 md:w-16 lg:w-20 xl:w-22 h-7 xs:h-8 sm:h-9 lg:h-10 rounded-xl flex flex-col items-center justify-center border transition-all duration-200 cursor-pointer ${
                             isReserved
                               ? "bg-[#2a0c12] border-[#991b1b]/55 text-[#fca5a5]/70 opacity-85 cursor-not-allowed"
                               : isSelected
                               ? "bg-gradient-to-b from-amber-300 to-amber-500 text-[#09090b] border-amber-200 font-bold scale-[1.05] shadow-[0_4px_16px_rgba(245,158,11,0.35)] z-10"
+                              : isBestSightline
+                              ? "bg-[#16201b] hover:bg-[#1e2d26] border-emerald-400/65 text-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.2)]"
                               : isVIP
                               ? "bg-[#1a1610] hover:bg-[#251f15] border-amber-400/35 hover:border-amber-300/70 text-amber-200"
                               : "bg-[#12141a] hover:bg-[#1a1d26] border-white/12 hover:border-white/30 text-zinc-300"
@@ -327,6 +362,15 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
               </div>
             );
           })}
+
+          {/* 2nd Floor Landmarks Strip */}
+          <div className="w-[96%] sm:w-[90%] max-w-5xl mt-1.5 flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.07] text-[9px] sm:text-[10px] font-mono text-zinc-400">
+            <span>🧦 Check-In &amp; Grip Socks Desk</span>
+            <span className="hidden sm:inline text-emerald-300/90">
+              ● Highlighted tables = Best sightline for selected zone
+            </span>
+            <span>☕ Espresso Bar &amp; Free Wi-Fi</span>
+          </div>
         </div>
       </div>
 
