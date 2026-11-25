@@ -1,75 +1,66 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  getVenueMovieBadge,
-  KARACHI_VENUES,
-  KarachiVenue,
-  MovieItem,
-} from "../constants/cinemaData";
-import { CinemaVenueMark } from "./FuturisticLogo";
-import {
-  ArmchairIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  FilmIcon,
-} from "./Icons";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { BranchInfo, PlayZoneItem } from "../constants/topsyData";
+import { ArrowLeftIcon, ArrowRightIcon, TicketIcon } from "./Icons";
 
 interface FilmReelGalleryProps {
-  movies: MovieItem[];
-  venue: KarachiVenue;
-  selectedDate: string;
-  onSelectDate: (date: string) => void;
-  onSelectVenue?: (venue: KarachiVenue) => void;
-  onSelectShowtime: (movieId: string, time: string) => void;
-  onSelectMovieForOverview: (movie: MovieItem) => void;
-  onBookMovieDirect: (movie: MovieItem) => void;
-  onOpenPitchModal?: () => void;
+  zones: PlayZoneItem[];
+  branch: BranchInfo;
+  onSelectZone: (zone: PlayZoneItem) => void;
+  onQuickBook: (zone: PlayZoneItem) => void;
 }
 
-const CLEAN_SHORT_TITLES: Record<string, string> = {
-  "soft-play-maze": "Soft-Play Maze",
-  "trampoline-climbing": "Trampoline & Climb",
-  "toddler-ball-pit": "Toddler Ball Pit",
-  "birthday-packages": "Birthday Packages",
-  "school-trips": "School Trips",
-};
-
-function getCyclicOffset(index: number, activeIndex: number, total: number): number {
-  let diff = index - activeIndex;
-  while (diff > total / 2) diff -= total;
-  while (diff < -total / 2) diff += total;
-  return diff;
-}
+const AUTO_ADVANCE_MS = 6500;
 
 export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
-  movies,
-  venue,
-  onSelectVenue,
-  onSelectMovieForOverview,
-  onBookMovieDirect,
-  onOpenPitchModal,
+  zones,
+  branch,
+  onSelectZone,
+  onQuickBook,
 }) => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [isSettled, setIsSettled] = useState<boolean>(true);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [isImageHovered, setIsImageHovered] = useState<boolean>(false);
+  const [progressKey, setProgressKey] = useState<number>(0);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
+  const activeZone = zones[activeIndex] || zones[0];
+
+  const goToSlide = useCallback(
+    (nextIndex: number) => {
+      const normalized =
+        ((nextIndex % zones.length) + zones.length) % zones.length;
+      setActiveIndex(normalized);
+      setProgressKey((k) => k + 1);
+    },
+    [zones.length]
+  );
+
+  const handlePrev = useCallback(() => {
+    goToSlide(activeIndex - 1);
+  }, [activeIndex, goToSlide]);
+
+  const handleNext = useCallback(() => {
+    goToSlide(activeIndex + 1);
+  }, [activeIndex, goToSlide]);
+
   useEffect(() => {
-    setIsSettled(false);
-    const timer = window.setTimeout(() => {
-      setIsSettled(true);
-    }, 420);
-    return () => window.clearTimeout(timer);
-  }, [activeIndex]);
+    if (isPaused || zones.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % zones.length);
+      setProgressKey((k) => k + 1);
+    }, AUTO_ADVANCE_MS);
+    return () => window.clearInterval(timer);
+  }, [isPaused, zones.length]);
 
-  const activeMovie = movies[activeIndex] || movies[0];
-
-  const handlePrevMovie = () => {
-    setActiveIndex((prev) => (prev - 1 + movies.length) % movies.length);
-  };
-
-  const handleNextMovie = () => {
-    setActiveIndex((prev) => (prev + 1) % movies.length);
-  };
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "ArrowRight") handleNext();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handlePrev, handleNext]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -80,450 +71,288 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
     if (touchStartX.current === null) return;
     const deltaX = e.changedTouches[0].clientX - touchStartX.current;
     const deltaY = e.changedTouches[0].clientY - (touchStartY.current || 0);
-    if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX < 0) {
-        handleNextMovie();
-      } else {
-        handlePrevMovie();
-      }
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) handleNext();
+      else handlePrev();
     }
     touchStartX.current = null;
     touchStartY.current = null;
   };
 
-  const getCardStyle = (offset: number) => {
-    if (offset === 0) {
-      return {
-        transform: "translate3d(0, 0, 0) scale(1)",
-        zIndex: 20,
-        opacity: 1,
-        pointerEvents: "auto" as const,
-      };
-    }
-    if (offset === 1) {
-      return {
-        transform: "translate3d(calc(100% + 28px), 0, 0) scale(0.92)",
-        zIndex: 10,
-        opacity: 0.65,
-        pointerEvents: "auto" as const,
-      };
-    }
-    if (offset === -1) {
-      return {
-        transform: "translate3d(calc(-100% - 28px), 0, 0) scale(0.92)",
-        zIndex: 0,
-        opacity: 0.35,
-        pointerEvents: "auto" as const,
-      };
-    }
-    if (offset > 1) {
-      return {
-        transform: "translate3d(calc(200% + 56px), 0, 0) scale(0.85)",
-        zIndex: 0,
-        opacity: 0,
-        pointerEvents: "none" as const,
-      };
-    }
-    return {
-      transform: "translate3d(calc(-200% - 56px), 0, 0) scale(0.85)",
-      zIndex: 0,
-      opacity: 0,
-      pointerEvents: "none" as const,
-    };
-  };
-
-  const handleCycleVenue = () => {
-    if (!onSelectVenue) return;
-    const idx = KARACHI_VENUES.findIndex((v) => v.id === venue.id);
-    const nextVenue = KARACHI_VENUES[(idx + 1) % KARACHI_VENUES.length];
-    onSelectVenue(nextVenue);
-  };
+  const secondaryCtaLabel =
+    activeZone.primaryFlow === "parties"
+      ? "Book Birthday Party"
+      : activeZone.primaryFlow === "school-trips"
+        ? "Book School Trip"
+        : "Buy Play Passes";
 
   return (
-    <div className="relative w-full h-screen bg-[#fffbf2] text-slate-900 flex flex-col justify-between pt-20 pb-3 px-4 sm:px-8 overflow-hidden select-none">
-      {/* Soft Pastel Ambient Background */}
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <img
-          key={activeMovie.id}
-          src={activeMovie.posterImage}
-          alt=""
-          aria-hidden="true"
-          className="w-full h-full object-cover object-center scale-110 blur-[80px] saturate-150 opacity-20 transition-all duration-700"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#fffbf2]/80 via-[#fffbf2]/65 to-[#fffbf2]/95" />
-      </div>
-
-      {/* Left Vertical Play Zone Selector Bar */}
-      <aside className="hidden md:flex flex-col gap-2.5 absolute left-5 lg:left-8 top-1/2 -translate-y-1/2 z-30 w-56 lg:w-64">
-        <span className="text-[10px] font-mono tracking-[0.22em] text-slate-500 uppercase px-2 mb-0.5 font-semibold">
-          Play Zones • 2nd Floor
-        </span>
-        {movies.map((m, idx) => {
-          const isSelected = idx === activeIndex;
-          const shortTitle = CLEAN_SHORT_TITLES[m.id] || m.title.split(":")[0];
-
-          return (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setActiveIndex(idx)}
-              className={`group w-full text-left p-2 rounded-2xl transition-all duration-200 flex items-center justify-between gap-3 cursor-pointer border ${
-                isSelected
-                  ? "bg-white backdrop-blur-2xl border-amber-400 text-slate-900 shadow-[0_12px_28px_rgba(245,158,11,0.18)] scale-[1.02]"
-                  : "bg-white/75 hover:bg-white backdrop-blur-md text-slate-700 hover:text-slate-950 border-slate-200/80 shadow-sm"
+    <div
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="relative w-full min-h-[100dvh] lg:h-[100dvh] lg:min-h-[560px] bg-[#FFFBF5] text-[#1F2A5A] flex flex-col-reverse lg:flex-row overflow-x-hidden lg:overflow-y-auto select-none"
+    >
+      {/* LEFT 50%: Inverted Hero Image + White Overlay + Editorial Copy */}
+      <div className="relative z-20 w-full lg:w-1/2 flex flex-col justify-between pt-6 sm:pt-8 lg:pt-24 pb-5 sm:pb-6 px-5 sm:px-8 lg:px-10 xl:px-16 overflow-hidden">
+        {/* Inverted Blurred Background */}
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+          {zones.map((z, idx) => (
+            <img
+              key={`inv-${z.id}`}
+              src={z.heroImage}
+              alt=""
+              aria-hidden="true"
+              className={`absolute inset-0 w-full h-full object-cover object-center -scale-x-100 scale-105 blur-md transition-opacity duration-[1000ms] ease-out ${
+                idx === activeIndex ? "opacity-100" : "opacity-0"
               }`}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <img
-                  src={m.posterImage}
-                  alt={shortTitle}
-                  className="w-10 h-12 rounded-xl object-cover flex-shrink-0 border border-slate-200"
-                />
-                <div className="min-w-0">
-                  <span className="text-xs sm:text-[13px] font-heading font-bold truncate block text-slate-900">
-                    {shortTitle}
-                  </span>
-                  <span className="text-[11px] text-slate-500 truncate block mt-0.5">
-                    {m.genre.split("/")[0].trim()} • ★ {m.imdbScore}
-                  </span>
-                </div>
-              </div>
-
-              <span
-                style={
-                  isSelected
-                    ? {
-                        backgroundColor: venue.brandPrimary,
-                        color: "#0f172a",
-                      }
-                    : undefined
-                }
-                className={`text-[10px] font-mono px-2.5 py-1 rounded-full flex-shrink-0 ${
-                  isSelected
-                    ? "font-bold shadow-sm"
-                    : "bg-slate-100 text-slate-500"
-                }`}
-              >
-                {m.releaseDateHeader}
-              </span>
-            </button>
-          );
-        })}
-      </aside>
-
-      {/* Center Editorial Showcase with Enlarged Main Card */}
-      <div className="relative z-20 flex-1 w-full max-w-5xl mx-auto flex flex-col items-center justify-center min-h-0 my-auto">
-        {/* Bold Editorial Header ("ZONE 01") */}
-        <div className="flex flex-col items-center mb-1.5 sm:mb-2.5">
-          <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.28em] text-amber-700 uppercase mb-0.5 font-semibold">
-            TOPSY TURVY • PACKAGES MALL LAHORE
-          </span>
-          <h1 className="font-heading text-2xl xs:text-3xl sm:text-5xl font-black tracking-tight text-slate-900">
-            {activeMovie.releaseDateHeader}
-          </h1>
+            />
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/85 via-white/75 to-white/65 backdrop-blur-sm" />
         </div>
 
-        {/* Enlarged Main Rounded 1:1 Poster Card & Carousel Controls with Smooth Sliding Transitions */}
+        {/* Center Editorial Content */}
         <div
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          className="relative w-full flex items-center justify-center touch-pan-y"
+          key={`hero-copy-${activeZone.id}`}
+          className="relative z-10 my-auto flex flex-col items-start text-left max-w-xl animate-[slideUpFade_0.5s_cubic-bezier(0.16,1,0.3,1)_forwards]"
         >
-          {/* Ambient Projection Glow Behind Centered Card */}
-          <div
-            className={`pointer-events-none absolute h-[52vh] sm:h-[58vh] max-h-[470px] min-h-[320px] aspect-square rounded-[34px] blur-2xl transition-opacity duration-500 ${
-              isSettled ? "opacity-55" : "opacity-15"
-            }`}
-            style={{
-              background: `radial-gradient(circle at 50% 50%, ${activeMovie.accentHex}38 0%, rgba(234,224,200,0.12) 45%, transparent 75%)`,
-            }}
+          {/* Prominent Full Topsy Turvy Logo in Hero */}
+          <img
+            src="/images/brand/topsy-turvy-wordmark.png"
+            alt="Topsy Turvy: Play, Learn, Celebrate"
+            className="h-16 sm:h-20 lg:h-24 w-auto object-contain mb-3 drop-shadow-sm"
           />
 
-          {/* 1:1 Square Poster Carousel Stage Container */}
-          <div className="relative h-[52vh] sm:h-[58vh] max-h-[470px] min-h-[320px] aspect-square max-w-[86vw]">
-            {/* Sliding Movie Cards Track */}
-            {movies.map((m, idx) => {
-              const offset = getCyclicOffset(idx, activeIndex, movies.length);
-              const isCenter = offset === 0;
-              const isRight = offset === 1;
-              const isLeft = offset === -1;
-              const isSide = Math.abs(offset) === 1;
+          {/* Warm Brand Eyebrow */}
+          <p
+            className="text-sm font-bold mb-2.5"
+            style={{ color: activeZone.accentHex }}
+          >
+            {activeZone.badge} · {activeZone.ageGroup}
+          </p>
 
-              const cardStyle = getCardStyle(offset);
+          {/* Display Title (fluid across all 16:9 screens) */}
+          <h1 className="font-heading text-[clamp(1.85rem,3.3vw,3.4rem)] font-extrabold tracking-[-0.035em] text-[#1F2A5A] leading-[1.06]">
+            {activeZone.shortTitle}
+          </h1>
 
-              return (
-                <div
-                  key={m.id}
-                  onClick={() => {
-                    if (isCenter) {
-                      onSelectMovieForOverview(m);
-                    } else if (isRight) {
-                      handleNextMovie();
-                    } else if (isLeft) {
-                      handlePrevMovie();
-                    }
-                  }}
-                  role="button"
-                  tabIndex={isCenter || isSide ? 0 : -1}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      if (isCenter) onSelectMovieForOverview(m);
-                      else if (isRight) handleNextMovie();
-                      else if (isLeft) handlePrevMovie();
-                    }
-                  }}
-                  aria-label={
-                    isCenter
-                      ? `View ${m.title}`
-                      : isRight
-                      ? `Next: ${m.title}`
-                      : `Previous: ${m.title}`
-                  }
-                  style={{
-                    ...cardStyle,
-                    borderColor:
-                      isCenter && isSettled
-                        ? "rgba(234, 224, 200, 0.78)"
-                        : undefined,
-                    boxShadow:
-                      isCenter && isSettled
-                        ? `0 0 0 1px rgba(234, 224, 200, 0.42), 0 0 34px rgba(234, 224, 200, 0.28), 0 0 72px ${m.accentHex}42, 0 28px 75px rgba(0,0,0,0.9)`
-                        : undefined,
-                    transition:
-                      "transform 550ms cubic-bezier(0.16, 1, 0.3, 1), opacity 550ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 520ms ease-out, border-color 480ms ease-out",
-                  }}
-                  className={`absolute inset-0 w-full h-full rounded-[24px] sm:rounded-[30px] overflow-hidden bg-[#0a0b0e] border ${
-                    isCenter
-                      ? "border-white/20 shadow-[0_28px_75px_rgba(0,0,0,0.88)] cursor-pointer"
-                      : isRight
-                      ? "border-white/15 shadow-[0_22px_60px_rgba(0,0,0,0.8)] cursor-pointer hover:border-white/30 max-sm:opacity-0 max-sm:pointer-events-none"
-                      : "border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.75)] cursor-pointer hover:border-white/20 max-sm:opacity-0 max-sm:pointer-events-none"
-                  }`}
-                >
-                  <img
-                    src={m.posterImage || "/images/posters/dune-part-two.jpg"}
-                    alt={m.title}
-                    className={`block w-full h-full object-cover object-center transition-transform duration-700 ${
-                      isCenter ? "group-hover:scale-[1.03]" : "hover:scale-105"
-                    }`}
-                  />
+          {/* Tagline */}
+          <p className="mt-3 text-[clamp(0.9rem,1.15vw,1.0625rem)] text-slate-700 font-normal leading-[1.6] max-w-lg">
+            {activeZone.tagline}
+          </p>
 
-                  {/* Smooth Multi-Stop Editorial Vignette */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#070709] via-[#070709]/40 to-transparent" />
+          {/* Clean Natural Feature Summary */}
+          <div className="mt-4 pt-4 border-t border-[#1F2A5A]/12 w-full flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm font-medium text-[#1F2A5A]/80">
+            <span>
+              {activeZone.highlights
+                .slice(0, 3)
+                .map((item) => item.name)
+                .join(" · ")}
+            </span>
+            <span className="text-slate-400">·</span>
+            <span className="text-slate-600">{branch.hoursSummary}</span>
+          </div>
 
-                  {/* LAYER A: CENTER CARD DETAILS (Smoothly Fades when isCenter) */}
-                  <div
-                    className={`absolute inset-0 flex flex-col justify-between transition-opacity duration-300 ${
-                      isCenter
-                        ? "opacity-100 pointer-events-auto"
-                        : "opacity-0 pointer-events-none"
-                    }`}
-                  >
-                    {/* Minimalist Slim Top-Corner Micro-Labels */}
-                    <div className="p-2.5 sm:p-3.5 flex items-center justify-between gap-2">
-                      <div className="px-2 py-0.5 rounded-full bg-black/35 backdrop-blur-md border border-white/10 flex items-center gap-1.5">
-                        <span className="text-amber-300 text-[10px] leading-none">
-                          ★
-                        </span>
-                        <span className="text-[10px] font-semibold text-white/95 font-mono-numbers">
-                          {m.imdbScore}
-                        </span>
-                        <span className="text-white/25 text-[9px]">•</span>
-                        <span className="text-[9px] font-mono tracking-wider text-zinc-300">
-                          {m.rating}
-                        </span>
-                      </div>
-
-                      <div className="px-2 py-0.5 rounded-full bg-black/35 backdrop-blur-md border border-white/10 flex items-center gap-1.5">
-                        <span
-                          className="w-1 h-1 rounded-full"
-                          style={{ backgroundColor: venue.brandPrimary }}
-                        />
-                        <span className="text-[9px] font-mono font-medium tracking-[0.12em] text-zinc-200 uppercase">
-                          {getVenueMovieBadge(venue, m.badge)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Bottom Full Editorial Showcase */}
-                    <div className="p-4 sm:p-6 pt-10 sm:pt-14 bg-gradient-to-t from-[#070709] via-[#070709]/85 to-transparent flex flex-col items-start text-left">
-                      <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono tracking-[0.14em] uppercase text-[#eae0c8] mb-0.5 sm:mb-1">
-                        <span>{m.genre}</span>
-                        <span className="text-white/30">•</span>
-                        <span>{m.duration}</span>
-                      </div>
-
-                      <h2 className="font-heading text-lg xs:text-xl sm:text-2xl md:text-[26px] font-extrabold tracking-tight text-white uppercase leading-[1.1] drop-shadow-md">
-                        {m.title}
-                      </h2>
-
-                      <div className="w-full mt-2 sm:mt-3.5 pt-2 sm:pt-3 border-t border-white/12 flex items-center justify-between gap-2 sm:gap-3">
-                        <div className="min-w-0 pr-1">
-                          <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-zinc-400 block truncate">
-                            {m.director} • 11 AM – 11 PM
-                          </span>
-                          <span className="text-[11px] sm:text-xs font-medium text-zinc-200 truncate block mt-0.5">
-                            {m.cast[0]?.name} &amp; {m.cast[1]?.name}
-                          </span>
-                        </div>
-
-                        <span
-                          style={{
-                            backgroundColor: venue.brandPrimary,
-                            color: "#09090b",
-                          }}
-                          className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-heading font-extrabold text-[11px] sm:text-xs tracking-tight flex items-center gap-1 sm:gap-1.5 flex-shrink-0 shadow-lg hover:scale-105 transition-transform"
-                        >
-                          <span>Explore</span>
-                          <span>→</span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* LAYER B: RIGHT CARD PREVIEW ("UP NEXT") */}
-                  <div
-                    className={`absolute inset-0 flex flex-col justify-between p-4 sm:p-5 transition-opacity duration-300 ${
-                      isRight
-                        ? "opacity-100 pointer-events-auto"
-                        : "opacity-0 pointer-events-none"
-                    }`}
-                  >
-                    <div className="flex justify-end">
-                      <div className="px-2.5 sm:px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[9px] sm:text-[10px] font-mono font-semibold text-zinc-200 uppercase">
-                        UP NEXT • {m.releaseDateHeader}
-                      </div>
-                    </div>
-
-                    <div className="text-left">
-                      <span className="text-[9px] sm:text-[10px] font-mono tracking-wider uppercase text-zinc-400 block">
-                        {m.genre.split("/")[0].trim()} • {m.duration}
-                      </span>
-                      <h3 className="font-heading text-sm sm:text-lg font-bold text-white uppercase tracking-tight truncate mt-0.5">
-                        {m.title}
-                      </h3>
-                      <span
-                        style={{ color: venue.brandPrimary }}
-                        className="text-xs font-semibold mt-1 inline-flex items-center gap-1"
-                      >
-                        <span>Up next</span>
-                        <span>→</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* LAYER C: LEFT CARD PREVIEW ("PREVIOUS") */}
-                  <div
-                    className={`absolute inset-0 flex flex-col justify-between p-4 sm:p-5 transition-opacity duration-300 ${
-                      isLeft
-                        ? "opacity-100 pointer-events-auto"
-                        : "opacity-0 pointer-events-none"
-                    }`}
-                  >
-                    <div className="flex justify-start">
-                      <div className="px-2.5 sm:px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[9px] sm:text-[10px] font-mono font-semibold text-zinc-300 uppercase">
-                        {m.releaseDateHeader}
-                      </div>
-                    </div>
-
-                    <div className="text-left">
-                      <span className="text-[9px] sm:text-[10px] font-mono tracking-wider uppercase text-zinc-400 block">
-                        {m.genre.split("/")[0].trim()} • {m.duration}
-                      </span>
-                      <h3 className="font-heading text-sm sm:text-lg font-bold text-white uppercase tracking-tight truncate mt-0.5">
-                        {m.title}
-                      </h3>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Previous Film Arrow Button */}
+          {/* Clean Dual CTAs */}
+          <div className="mt-5 flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={handlePrevMovie}
-              aria-label="Previous Zone"
-              className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white backdrop-blur-md border border-slate-200 flex items-center justify-center text-slate-700 hover:text-slate-950 transition-all hover:scale-105 cursor-pointer shadow-xl"
+              onClick={() => onSelectZone(activeZone)}
+              style={{
+                backgroundColor: activeZone.accentHex,
+                color: "#ffffff",
+                boxShadow: `0 12px 28px ${activeZone.accentHex}40`,
+              }}
+              className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full font-heading font-extrabold text-xs sm:text-sm tracking-tight flex items-center gap-2 hover:-translate-y-0.5 hover:scale-[1.04] hover:brightness-105 active:translate-y-0 active:scale-[0.98] transition-all duration-200 cursor-pointer"
             >
-              <ArrowLeftIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+              <span>Explore Zone</span>
+              <span>→</span>
             </button>
 
-            {/* Next Zone Arrow Button */}
             <button
               type="button"
-              onClick={handleNextMovie}
-              aria-label="Next Zone"
-              className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white backdrop-blur-md border border-slate-200 flex items-center justify-center text-slate-700 hover:text-slate-950 transition-all hover:scale-105 cursor-pointer shadow-xl"
+              onClick={() => onQuickBook(activeZone)}
+              className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-white/95 hover:bg-white border border-[#1F2A5A]/15 hover:border-[#1BA0DE] font-heading font-bold text-xs sm:text-sm text-[#1F2A5A] flex items-center gap-2 shadow-[0_6px_18px_rgba(31,42,90,0.1)] hover:shadow-[0_12px_26px_rgba(27,160,222,0.24)] hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0 active:scale-[0.98] transition-all duration-200 cursor-pointer"
             >
-              <ArrowRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+              <TicketIcon className="w-4 h-4 text-[#1BA0DE]" />
+              <span>{secondaryCtaLabel}</span>
             </button>
           </div>
         </div>
 
-        {/* Mobile-Only Compact Selector Strip */}
-        <div className="flex md:hidden mt-2 items-center gap-1.5 overflow-x-auto no-scrollbar max-w-full px-2 py-0.5">
-          {movies.map((m, idx) => {
-            const isSelected = idx === activeIndex;
-            const shortTitle = CLEAN_SHORT_TITLES[m.id] || m.title.split(":")[0];
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setActiveIndex(idx)}
-                className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  isSelected
-                    ? "bg-amber-400 text-slate-950 shadow-sm"
-                    : "bg-white/85 text-slate-700 border border-slate-200"
+        {/* Minimal Carousel Progress & Arrows */}
+        <div className="relative z-10 flex items-center justify-between gap-4 pt-4">
+          <div className="flex items-center gap-2">
+            {zones.map((z, idx) => {
+              const isSelected = idx === activeIndex;
+              return (
+                <button
+                  key={z.id}
+                  type="button"
+                  onClick={() => goToSlide(idx)}
+                  aria-label={`Go to ${z.shortTitle}`}
+                  className={`relative h-1.5 rounded-full overflow-hidden transition-all duration-300 cursor-pointer ${
+                    isSelected
+                      ? "w-10 bg-slate-200"
+                      : "w-2.5 bg-slate-300/75 hover:bg-slate-400"
+                  }`}
+                >
+                  {isSelected && (
+                    <span
+                      key={progressKey}
+                      className="absolute inset-y-0 left-0 rounded-full"
+                      style={
+                        !isPaused
+                          ? {
+                              backgroundColor: activeZone.accentHex,
+                              animation: `heroProgress ${AUTO_ADVANCE_MS}ms linear forwards`,
+                            }
+                          : { width: "100%", backgroundColor: activeZone.accentHex }
+                      }
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrev}
+              aria-label="Previous Zone"
+              className="w-9 h-9 rounded-full bg-white/90 hover:bg-white border border-slate-200 flex items-center justify-center text-[#1F2A5A] shadow-sm transition-all cursor-pointer"
+            >
+              <ArrowLeftIcon className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              aria-label="Next Zone"
+              className="w-9 h-9 rounded-full bg-white/90 hover:bg-white border border-slate-200 flex items-center justify-center text-[#1F2A5A] shadow-sm transition-all cursor-pointer"
+            >
+              <ArrowRightIcon className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT 50%: Full-Height Hero Image with Hover Bottom-Overlay & Center Transition */}
+      <div
+        onMouseEnter={() => setIsImageHovered(true)}
+        onMouseLeave={() => setIsImageHovered(false)}
+        onClick={() => setIsImageHovered((prev) => !prev)}
+        className="group relative w-full lg:w-1/2 h-[44vh] sm:h-[48vh] lg:h-full overflow-hidden flex-shrink-0 cursor-pointer"
+      >
+        {zones.map((z, idx) => {
+          const isCurrent = idx === activeIndex;
+          return (
+            <div
+              key={z.id}
+              className={`absolute inset-0 transition-all duration-[1000ms] ease-out ${
+                isCurrent
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-105 pointer-events-none"
+              }`}
+            >
+              <img
+                src={z.heroImage}
+                alt={z.title}
+                className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-linear ${
+                  isImageHovered
+                    ? "scale-105"
+                    : isCurrent
+                      ? "scale-105"
+                      : "scale-100"
                 }`}
-              >
-                {shortTitle}
-              </button>
-            );
-          })}
+              />
+            </div>
+          );
+        })}
+
+        {/* Resting Soft Bottom Gradient Scrim */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/15 to-transparent" />
+
+        {/* Emerging Bottom Overlay on Hover (Zone-Colored) */}
+        <div
+          style={{
+            background: `linear-gradient(to top, ${activeZone.accentHex}EB 0%, ${activeZone.accentHex}BF 55%, ${activeZone.accentHex}59 100%)`,
+          }}
+          className={`pointer-events-none absolute inset-0 z-10 backdrop-blur-[3px] transition-transform duration-600 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            isImageHovered ? "translate-y-0" : "translate-y-full"
+          }`}
+        />
+
+        {/* LAYER A: Travelling & Enlarging Title Block (Bottom-Right -> Centered) */}
+        <div
+          style={
+            isImageHovered
+              ? {
+                  left: "50%",
+                  top: "35%",
+                  transform: "translate3d(-50%, -50%, 0) scale(1.22)",
+                }
+              : {
+                  left: "calc(100% - 2rem)",
+                  top: "calc(100% - 10rem)",
+                  transform: "translate3d(-100%, 0, 0) scale(1)",
+                }
+          }
+          className={`pointer-events-none absolute z-20 w-max max-w-[74%] transition-[top,left,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[top,left,transform] ${
+            isImageHovered ? "text-center" : "text-right"
+          }`}
+        >
+          <span className="text-base sm:text-lg font-extrabold tracking-wide text-[#F7D41B] block">
+            {activeZone.badge}
+          </span>
+          <p className="text-2xl sm:text-3xl lg:text-[34px] font-heading font-black tracking-tight text-white leading-tight mt-1 drop-shadow-md">
+            {activeZone.subtitle}
+          </p>
+        </div>
+
+        {/* LAYER B: Minimal Details & CTA Formed on Overlay */}
+        <div
+          className={`absolute inset-x-6 sm:inset-x-10 top-[50%] z-20 flex flex-col items-center text-center transition-all duration-500 delay-150 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isImageHovered
+              ? "opacity-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 translate-y-10 pointer-events-none"
+          }`}
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/25 text-xs sm:text-sm font-bold text-white/95">
+            <span>{activeZone.ageGroup}</span>
+            <span className="text-white/40">•</span>
+            <span>{branch.city}</span>
+          </span>
+
+          <p className="mt-3.5 text-base sm:text-lg lg:text-[19px] font-medium text-white/95 leading-relaxed max-w-lg line-clamp-3">
+            {activeZone.tagline}
+          </p>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectZone(activeZone);
+            }}
+            style={{
+              backgroundColor: activeZone.accentHex,
+              boxShadow: `0 12px 28px ${activeZone.accentHex}55`,
+            }}
+            className="mt-6 px-7 py-3.5 rounded-full text-white font-heading font-extrabold text-sm sm:text-base tracking-tight flex items-center gap-2 hover:-translate-y-0.5 hover:scale-[1.05] hover:brightness-105 active:translate-y-0 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+          >
+            <span>Explore {activeZone.shortTitle}</span>
+            <span>→</span>
+          </button>
         </div>
       </div>
 
-      {/* Bottom Floating Quick-Action Dock Pill */}
-      <div className="relative z-20 w-full flex items-center justify-center pt-1">
-        <div className="sleek-glass-pill inline-flex items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-full">
-          <button
-            type="button"
-            className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-[11px] sm:text-xs font-bold text-slate-900 flex items-center gap-1 sm:gap-1.5 cursor-pointer"
-          >
-            <span className="inline-flex" style={{ color: "#d97706" }}>
-              <FilmIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-            </span>
-            <span>Play Zones</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onSelectMovieForOverview(activeMovie)}
-            className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full hover:bg-slate-900/5 text-[11px] sm:text-xs font-medium text-slate-600 hover:text-slate-950 transition-colors cursor-pointer"
-          >
-            Zone Info
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onBookMovieDirect(activeMovie)}
-            className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full hover:bg-slate-900/5 text-[11px] sm:text-xs font-medium text-slate-600 hover:text-slate-950 transition-colors flex items-center gap-1 sm:gap-1.5 cursor-pointer"
-          >
-            <ArmchairIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-slate-600" />
-            <span>Book Table</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenPitchModal || handleCycleVenue}
-            className="px-2 sm:px-3 py-1 rounded-full hover:bg-slate-900/5 text-[11px] sm:text-xs font-medium text-slate-700 hover:text-slate-950 transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <CinemaVenueMark venue={venue} size="xs" />
-            <span className="hidden xs:inline">{venue.shortName}</span>
-          </button>
-        </div>
-      </div>
+      <style>{`
+        @keyframes heroProgress {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
+      `}</style>
     </div>
   );
 };

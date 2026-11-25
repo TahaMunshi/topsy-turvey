@@ -1,34 +1,34 @@
 import React, { useState } from "react";
 import {
-  CONCESSION_MENU,
-  getSeatSpatialData,
-  KarachiVenue,
-  MovieItem,
+  BranchInfo,
+  CAFE_MENU,
+  formatPKR,
+  GRIP_SOCKS_PKR,
+  PARTY_ADVANCE_PCT,
+  PARTY_EXTRAS,
+  PLAY_PASSES,
   PROMO_CODES,
-} from "../constants/cinemaData";
-import { soundEngine } from "../utils/audioEffects";
-import { CinemaVenueMark } from "./FuturisticLogo";
+} from "../constants/topsyData";
+import { TopsyBrandMark } from "./FuturisticLogo";
+import { ChildPassEntry } from "./PassBookingView";
+import { PartyBookingDraft, SchoolTripDraft } from "./PartyBookingView";
+
+export type CheckoutMode = "passes" | "party" | "school";
 
 interface CheckoutModalProps {
   isOpen: boolean;
-  venue: KarachiVenue;
-  selectedMovie: MovieItem;
-  selectedDate: string;
-  selectedSeats: string[];
-  selectedConcessions: Record<string, number>;
-  currency: "PKR" | "USD";
+  mode: CheckoutMode;
+  branch: BranchInfo;
+  visitDate: string;
+  visitTime: string;
+  childrenList: ChildPassEntry[];
+  cafeCart: Record<string, number>;
+  partyDraft: PartyBookingDraft;
+  schoolDraft: SchoolTripDraft;
   onClose: () => void;
 }
 
-type PaymentMethod =
-  | "JAZZCASH"
-  | "EASYPAISA"
-  | "CARD"
-  | "RAAST"
-  | "STRIPE"
-  | "PAYPAL"
-  | "APPLE_PAY"
-  | "KLARNA";
+type PaymentMethod = "CARD" | "JAZZCASH" | "EASYPAISA" | "RAAST";
 
 function buildQrCells(code: string): boolean[][] {
   const size = 21;
@@ -68,7 +68,8 @@ function buildQrCells(code: string): boolean[][] {
         continue;
       }
 
-      const h = Math.imul(seed ^ (r * 73856093) ^ (c * 19349663), 0x45d9f3b) >>> 0;
+      const h =
+        Math.imul(seed ^ (r * 73856093) ^ (c * 19349663), 0x45d9f3b) >>> 0;
       grid[r][c] = (h & 1) === 1;
     }
   }
@@ -76,199 +77,280 @@ function buildQrCells(code: string): boolean[][] {
   return grid;
 }
 
+function shortNumericHash(input: string, digits: number): string {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  const mod = Math.pow(10, digits);
+  return String(h % mod).padStart(digits, "0");
+}
+
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   isOpen,
-  venue,
-  selectedMovie,
-  selectedDate,
-  selectedSeats,
-  selectedConcessions,
-  currency,
+  mode,
+  branch,
+  visitDate,
+  visitTime,
+  childrenList,
+  cafeCart,
+  partyDraft,
+  schoolDraft,
   onClose,
 }) => {
-  const isUSD = currency === "USD";
   const [step, setStep] = useState<"payment" | "confirmed">("payment");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
-    isUSD ? "STRIPE" : "JAZZCASH"
-  );
-  const [guestName, setGuestName] = useState<string>(
-    isUSD ? "Alexander Vance" : "Taha Jawed"
-  );
-  const [guestContact, setGuestContact] = useState<string>(
-    isUSD ? "parent@topsyturvy.pk" : "0300-8219402"
-  );
-  const [walletAdded, setWalletAdded] = useState<boolean>(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("JAZZCASH");
+  const [parentName, setParentName] = useState<string>("Ayesha Khan");
+  const [parentPhone, setParentPhone] = useState<string>("0300-8219402");
   const [promoInput, setPromoInput] = useState<string>("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
 
-  // Sync default payment method & contact when currency or venue changes
-  React.useEffect(() => {
-    if (isUSD) {
-      setPaymentMethod("STRIPE");
-      setGuestName((prev) => (prev === "Taha Jawed" ? "Alexander Vance" : prev));
-      setGuestContact((prev) => (prev === "0300-8219402" ? "parent@topsyturvy.pk" : prev));
-    } else {
-      setPaymentMethod("JAZZCASH");
-      setGuestName((prev) => (prev === "Alexander Vance" ? "Taha Jawed" : prev));
-      setGuestContact((prev) => (prev === "parent@topsyturvy.pk" ? "0300-8219402" : prev));
-    }
-  }, [isUSD, venue.id]);
-
   if (!isOpen) return null;
 
-  const seatsTotal = selectedSeats.reduce((acc, id) => {
-    const d = getSeatSpatialData(id, venue);
-    return acc + (isUSD ? d.priceUSD : d.pricePKR);
-  }, 0);
-
-  const concessionItemsList = CONCESSION_MENU.filter(
-    (item) => (selectedConcessions[item.id] || 0) > 0
+  // Passes calculation
+  const passPrices = childrenList.map((c) => {
+    const p = PLAY_PASSES.find((opt) => opt.id === c.passId) || PLAY_PASSES[0];
+    return p.pricePKR;
+  });
+  const passesOnlySubtotal = passPrices.reduce((a, b) => a + b, 0);
+  const socksSubtotal =
+    childrenList.filter((c) => c.includeSocks).length * GRIP_SOCKS_PKR;
+  const cafeSubtotal = CAFE_MENU.reduce(
+    (sum, item) => sum + (cafeCart[item.id] || 0) * item.pricePKR,
+    0
   );
-
-  const concessionsTotal = concessionItemsList.reduce((acc, item) => {
-    const qty = selectedConcessions[item.id] || 0;
-    const unitPrice = isUSD ? item.priceUSD : item.pricePKR;
-    return acc + qty * unitPrice;
-  }, 0);
 
   const activePromoObj = PROMO_CODES.find(
     (p) => p.code.toUpperCase() === (appliedPromo || "").toUpperCase()
   );
 
   let discountAmount = 0;
-  if (activePromoObj) {
-    if (activePromoObj.type === "BOGO" && selectedSeats.length > 0) {
-      const passPrices = selectedSeats
-        .map((id) => {
-          const d = getSeatSpatialData(id, venue);
-          return isUSD ? d.priceUSD : d.pricePKR;
-        })
-        .sort((a, b) => a - b);
-      if (passPrices.length >= 2) {
-        const freeCount = Math.floor(passPrices.length / 2);
-        discountAmount = passPrices.slice(0, freeCount).reduce((a, b) => a + b, 0);
+  if (mode === "passes" && activePromoObj) {
+    if (activePromoObj.type === "BOGO" && passPrices.length > 0) {
+      const sorted = [...passPrices].sort((a, b) => a - b);
+      if (sorted.length >= 2) {
+        const freeCount = Math.floor(sorted.length / 2);
+        discountAmount = sorted.slice(0, freeCount).reduce((a, b) => a + b, 0);
       } else {
-        discountAmount = passPrices[0] * 0.5;
+        discountAmount = Math.round(sorted[0] * 0.5);
       }
     } else if (activePromoObj.type === "PERCENT" && activePromoObj.percentOff) {
-      discountAmount = ((seatsTotal + concessionsTotal) * activePromoObj.percentOff) / 100;
+      discountAmount = Math.round(
+        ((passesOnlySubtotal + socksSubtotal + cafeSubtotal) *
+          activePromoObj.percentOff) /
+          100
+      );
     }
   }
 
-  const grandTotal = Math.max(0, seatsTotal + concessionsTotal - discountAmount);
+  // Party calculation
+  const selectedPkg =
+    branch.partyPackages.find((p) => p.id === partyDraft.packageId) ||
+    branch.partyPackages[0];
+  const partyExtrasTotal = PARTY_EXTRAS.filter((ex) =>
+    partyDraft.extraIds.includes(ex.id)
+  ).reduce(
+    (sum, ex) =>
+      sum + (ex.perChild ? ex.pricePKR * partyDraft.kidsCount : ex.pricePKR),
+    0
+  );
+  const partyFullTotal =
+    partyDraft.kidsCount * selectedPkg.pricePKR + partyExtrasTotal;
+  const partyAdvanceDue = Math.round(
+    (partyFullTotal * PARTY_ADVANCE_PCT) / 100
+  );
 
-  const formatMoney = (val: number) =>
-    isUSD ? `$${val.toFixed(2)}` : `Rs. ${val.toLocaleString()}`;
+  // School calculation
+  const schoolFullTotal = schoolDraft.studentsCount * schoolDraft.ratePerStudent;
+  const schoolAdvanceDue = Math.round(
+    (schoolFullTotal * PARTY_ADVANCE_PCT) / 100
+  );
 
-  const passCode = `${venue.shortName.slice(0, 3)}-${selectedSeats.length > 0 ? selectedSeats.join("") : "GA"}-${selectedMovie.selectedTime.replace(/[^0-9]/g, "")}`;
+  const payableNow =
+    mode === "passes"
+      ? Math.max(0, passesOnlySubtotal + socksSubtotal + cafeSubtotal - discountAmount)
+      : mode === "party"
+        ? partyAdvanceDue
+        : schoolAdvanceDue;
 
-  const paymentOptions = isUSD
-    ? [
-        { id: "STRIPE", label: "Stripe", sub: "Cards • Apple/Google Pay", badge: "Instant" },
-        { id: "PAYPAL", label: "PayPal", sub: "1-Click Express Checkout", badge: "Global" },
-        { id: "APPLE_PAY", label: "Apple Pay", sub: "Face ID / Touch ID", badge: "1-Tap" },
-        { id: "KLARNA", label: "Klarna", sub: "Pay in 4 (0% APR)", badge: "BNPL" },
-      ]
-    : [
-        { id: "JAZZCASH", label: "JazzCash", sub: "Mobile Wallet", badge: "Direct" },
-        { id: "EASYPAISA", label: "EasyPaisa", sub: "Instant Transfer", badge: "Direct" },
-        { id: "RAAST", label: "RAAST", sub: "Instant QR Payment", badge: "State Bank" },
-        { id: "CARD", label: "Card", sub: "Visa / Mastercard", badge: "Secure" },
-      ];
+  const balanceAtCounter =
+    mode === "party"
+      ? partyFullTotal - partyAdvanceDue
+      : mode === "school"
+        ? schoolFullTotal - schoolAdvanceDue
+        : 0;
+
+  // POS-compatible booking / ticket ID
+  const posCode =
+    mode === "passes"
+      ? `${branch.code}-WEB-${shortNumericHash(
+          `${parentName}-${visitDate}-${visitTime}-${childrenList.length}`,
+          6
+        )}`
+      : mode === "party"
+        ? `PTY-${branch.code}-${shortNumericHash(
+            `${partyDraft.celebrantName}-${partyDraft.room}-${partyDraft.slot}-${partyDraft.kidsCount}`,
+            4
+          )}`
+        : `SCH-${branch.code}-${shortNumericHash(
+            `${schoolDraft.schoolName}-${schoolDraft.slot}-${schoolDraft.studentsCount}`,
+            4
+          )}`;
+
+  const qrCells = buildQrCells(posCode);
+
+  const paymentOptions: Array<{
+    id: PaymentMethod;
+    label: string;
+    sub: string;
+  }> = [
+    { id: "JAZZCASH", label: "JazzCash", sub: "Mobile Wallet" },
+    { id: "EASYPAISA", label: "EasyPaisa", sub: "Instant Transfer" },
+    { id: "RAAST", label: "RAAST / Bank", sub: "Instant Transfer" },
+    { id: "CARD", label: "Card", sub: "Visa / Mastercard" },
+  ];
+
+  const handleClose = () => {
+    setStep("payment");
+    onClose();
+  };
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
-      onClick={() => {
-        setStep("payment");
-        onClose();
-      }}
+      className="fixed inset-0 z-50 bg-[#1F2A5A]/45 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
+      onClick={handleClose}
     >
       <div
-        className="bg-white/95 backdrop-blur-2xl border border-slate-200 rounded-[28px] max-w-lg w-full p-4 sm:p-6 max-h-[92dvh] overflow-y-auto relative my-auto shadow-2xl text-slate-900"
+        className="bg-white border border-slate-200 rounded-[28px] max-w-lg w-full p-5 sm:p-6 max-h-[92dvh] overflow-y-auto relative my-auto shadow-2xl text-[#1F2A5A]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <CinemaVenueMark venue={venue} size="md" />
+            <TopsyBrandMark size="md" />
             <div>
-              <span
-                className="text-[10px] font-mono uppercase tracking-[0.2em] block font-bold"
-                style={{ color: "#b45309" }}
-              >
-                {step === "confirmed" ? "Digital Playland Pass" : "Checkout"}
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] block font-bold text-[#E31E3C]">
+                {step === "confirmed"
+                  ? "Counter-Ready QR Pass"
+                  : mode === "passes"
+                    ? "Play Pass Checkout"
+                    : mode === "party"
+                      ? "20% Party Advance"
+                      : "20% School Trip Advance"}
               </span>
-              <h3 className="font-heading font-bold text-base sm:text-lg text-slate-900 mt-0.5">
-                {step === "confirmed" ? "Booking Confirmed" : "Complete Reservation"}
-              </h3>
+              <h2 className="font-heading text-base font-extrabold text-[#1F2A5A]">
+                {branch.name}
+              </h2>
             </div>
           </div>
+
           <button
             type="button"
-            onClick={() => {
-              setStep("payment");
-              onClose();
-            }}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 text-xs transition-colors cursor-pointer"
+            onClick={handleClose}
+            aria-label="Close"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#1F2A5A] text-sm font-bold flex items-center justify-center cursor-pointer"
           >
             ✕
           </button>
         </div>
 
         {step === "payment" ? (
-          <div className="my-4 space-y-4 text-xs">
-            {/* Booking Summary Box */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
-              <div className="flex justify-between text-slate-500">
-                <span>Play Zone</span>
-                <span className="font-bold text-slate-900 text-right">
-                  {selectedMovie.title}
-                </span>
-              </div>
-              <div className="flex justify-between text-slate-500">
-                <span>Location</span>
-                <span className="text-slate-800 text-right">
-                  {venue.name} • Packages Mall, Lahore
-                </span>
-              </div>
-              <div className="flex justify-between text-slate-500">
-                <span>Time Slot</span>
-                <span className="font-mono text-amber-700 font-semibold">
-                  {selectedDate} • {selectedMovie.selectedTime}
-                </span>
-              </div>
-              <div className="flex justify-between text-slate-500 pt-2 border-t border-slate-200">
-                <span>Café Tables ({selectedSeats.length})</span>
-                <span className="font-bold text-slate-900 font-mono">
-                  {selectedSeats.length > 0 ? selectedSeats.join(", ") : "Walk-In Pass"}
-                </span>
-              </div>
-              {concessionItemsList.length > 0 && (
-                <div className="flex justify-between text-slate-500 pt-2 border-t border-slate-200">
-                  <span>Socks, Activities &amp; Café</span>
-                  <span className="text-slate-800 text-right font-medium">
-                    {concessionItemsList
-                      .map((c) => `${selectedConcessions[c.id]}x ${c.name.split(" ")[0]}`)
-                      .join(", ")}
-                  </span>
-                </div>
+          <div className="mt-4 space-y-4">
+            {/* Summary Box */}
+            <div className="p-3.5 rounded-2xl bg-[#FFFBF5] border border-slate-200 space-y-1.5 text-xs">
+              {mode === "passes" && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">
+                      {childrenList.length} Child Pass(es) • {visitDate} {visitTime}
+                    </span>
+                    <span className="font-mono font-bold">
+                      {formatPKR(passesOnlySubtotal + socksSubtotal)}
+                    </span>
+                  </div>
+                  {cafeSubtotal > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Parent Café Pre-Order</span>
+                      <span className="font-mono font-bold">
+                        {formatPKR(cafeSubtotal)}
+                      </span>
+                    </div>
+                  )}
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-[#1FA246] font-semibold">
+                      <span>Promo ({appliedPromo})</span>
+                      <span className="font-mono">-{formatPKR(discountAmount)}</span>
+                    </div>
+                  )}
+                </>
               )}
-              {activePromoObj && discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-700 pt-2 border-t border-slate-200 font-mono font-bold">
-                  <span>Promo ({activePromoObj.code})</span>
-                  <span>-{formatMoney(discountAmount)}</span>
-                </div>
+
+              {mode === "party" && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">
+                      {selectedPkg.name} • {partyDraft.room} • {partyDraft.kidsCount} kids
+                    </span>
+                    <span className="font-mono font-bold">
+                      {formatPKR(partyFullTotal)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-slate-500">
+                    <span>Balance at Counter on Party Day</span>
+                    <span className="font-mono">{formatPKR(balanceAtCounter)}</span>
+                  </div>
+                </>
               )}
+
+              {mode === "school" && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">
+                      {schoolDraft.schoolName || "School Trip"} •{" "}
+                      {schoolDraft.studentsCount} students (Teachers Free)
+                    </span>
+                    <span className="font-mono font-bold">
+                      {formatPKR(schoolFullTotal)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-slate-500">
+                    <span>Balance at Counter on Arrival</span>
+                    <span className="font-mono">{formatPKR(balanceAtCounter)}</span>
+                  </div>
+                </>
+              )}
+
+              <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+                <span className="font-heading font-bold text-sm">
+                  {mode === "passes" ? "Total Payable" : "20% Advance Payable Now"}
+                </span>
+                <span className="font-heading text-xl font-black text-[#E31E3C]">
+                  {formatPKR(payableNow)}
+                </span>
+              </div>
             </div>
 
-            {/* Vouch365 / BOGO Promo Code Box */}
-            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-amber-900 font-bold">
-                  Vouch365 / BOGO Promo Code
-                </span>
-                <div className="flex items-center gap-1">
+            {/* Promo Code (Passes Mode Only) */}
+            {mode === "passes" && (
+              <div className="space-y-1.5">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value)}
+                    placeholder="Promo code (try VOUCH365, BOGO, TOPSY10)"
+                    className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-[#1F2A5A] focus:outline-none focus:border-[#1BA0DE]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setAppliedPromo(promoInput.trim() || null)}
+                    className="px-4 py-2 rounded-xl bg-[#1F2A5A] text-white text-xs font-heading font-bold cursor-pointer"
+                  >
+                    Apply
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
                   {PROMO_CODES.map((p) => (
                     <button
                       key={p.code}
@@ -277,345 +359,128 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         setPromoInput(p.code);
                         setAppliedPromo(p.code);
                       }}
-                      className={`text-[9px] font-mono px-2 py-0.5 rounded-full border cursor-pointer transition-colors ${
-                        appliedPromo === p.code
-                          ? "bg-emerald-500 text-white border-emerald-600 font-bold"
-                          : "bg-white text-slate-700 border-slate-200 hover:border-amber-400"
-                      }`}
+                      className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-[#1BA0DE]/15 text-[#1F2A5A] cursor-pointer"
                     >
                       {p.code}
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="flex gap-2">
+            )}
+
+            {/* Parent / Contact Info */}
+            <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <input
                   type="text"
-                  value={promoInput}
-                  onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
-                  placeholder="Enter VOUCH365, BOGO, or PACKAGES10"
-                  className="flex-1 bg-white border border-slate-200 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono outline-none"
+                  value={parentName}
+                  onChange={(e) => setParentName(e.target.value)}
+                  placeholder="Parent / Coordinator Name"
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-[#1F2A5A] focus:outline-none focus:border-[#1BA0DE]"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const match = PROMO_CODES.find(
-                      (p) => p.code === promoInput.trim().toUpperCase()
-                    );
-                    setAppliedPromo(match ? match.code : null);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-heading font-bold text-xs cursor-pointer transition-colors"
-                >
-                  Apply
-                </button>
-              </div>
-              {activePromoObj && (
-                <p className="text-[10px] text-emerald-700 font-mono font-semibold">
-                  ✓ {activePromoObj.label}: {activePromoObj.description}
-                </p>
-              )}
-            </div>
-
-            {/* Parent Form Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1.5 font-semibold">
-                  Parent / Guardian Name
-                </label>
                 <input
                   type="text"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder={isUSD ? "e.g. Alexander Vance" : "e.g. Taha Jawed"}
-                  className="w-full bg-white border border-slate-200 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 outline-none transition-colors"
+                  value={parentPhone}
+                  onChange={(e) => setParentPhone(e.target.value)}
+                  placeholder="Phone (03XX-XXXXXXX)"
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-[#1F2A5A] focus:outline-none focus:border-[#1BA0DE]"
                 />
               </div>
-              <div>
-                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1.5 font-semibold">
-                  {isUSD ? "Email & Mobile (Wallet Pass)" : "WhatsApp Pass Number"}
-                </label>
-                <input
-                  type="text"
-                  value={guestContact}
-                  onChange={(e) => setGuestContact(e.target.value)}
-                  placeholder={isUSD ? "parent@topsyturvy.pk" : "0300-8219402"}
-                  className="w-full bg-white border border-slate-200 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-mono outline-none transition-colors"
-                />
-              </div>
+              <p className="text-[10px] text-slate-500">
+                For Counter 1 lookup only. We never message or spam customers.
+              </p>
             </div>
 
-            {/* Payment Method Selector */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">
-                  Payment Method {isUSD ? "(Global Gateway)" : "(Local Gateway)"}
-                </span>
-                <span className="text-[10px] font-mono text-slate-500">
-                  Currency: <strong className="text-slate-900">{isUSD ? "USD ($)" : "PKR (Rs.)"}</strong>
-                </span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {paymentOptions.map((pm) => {
-                  const active = paymentMethod === pm.id;
-                  return (
-                    <button
-                      key={pm.id}
-                      type="button"
-                      onClick={() => setPaymentMethod(pm.id as PaymentMethod)}
-                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                        active
-                          ? "bg-amber-400 border-amber-500 text-slate-950 shadow-sm"
-                          : "bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-white"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-xs font-bold block">{pm.label}</span>
-                        <span
-                          className={`text-[8px] font-mono px-1 py-0.2 rounded ${
-                            active
-                              ? "bg-black/15 text-slate-950 font-bold"
-                              : "bg-slate-200 text-slate-600"
-                          }`}
-                        >
-                          {pm.badge}
-                        </span>
-                      </div>
-                      <span
-                        className={`text-[10px] block mt-1 leading-tight ${
-                          active ? "text-slate-900 font-medium" : "text-slate-500"
-                        }`}
-                      >
-                        {pm.sub}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Total and Checkout CTA */}
-            <div className="pt-4 border-t border-slate-200 flex items-center justify-between gap-4">
-              <div>
-                <span className="text-[10px] text-slate-500 block font-mono">
-                  Total Payable ({paymentMethod})
-                </span>
-                <span className="text-xl font-heading font-extrabold font-mono-numbers text-slate-900">
-                  {formatMoney(grandTotal)}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  soundEngine.playSuccessChime();
-                  setStep("confirmed");
-                }}
-                className="px-6 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-heading font-extrabold text-xs transition-all cursor-pointer shadow-md"
-              >
-                Confirm &amp; Issue Pass →
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* STEP 2: CONFIRMED MINIMALIST BOARDING PASS */
-          <div className="my-4 space-y-4 text-xs">
-            <div className="relative bg-black/50 border border-white/12 rounded-2xl overflow-hidden">
-              {/* Top Brand Accent Bar */}
-              <div
-                className="h-1 w-full"
-                style={{ backgroundColor: venue.brandPrimary }}
-              />
-
-              <div className="p-4 space-y-3">
-                <div className="flex justify-between items-start gap-2">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block">
-                      {venue.name} • ADMISSION PASS
-                    </span>
-                    <h4 className="font-heading font-bold text-base text-white mt-0.5">
-                      {selectedMovie.title}
-                    </h4>
-                  </div>
-                  <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#eae0c8] text-[#09090b] flex-shrink-0">
-                    PAID • {paymentMethod}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/10 text-[11px] font-mono">
-                  <div>
-                    <span className="text-[9px] text-zinc-500 block">LOCATION</span>
-                    <span className="text-zinc-200 font-semibold">Packages Mall 2F</span>
-                  </div>
-                  <div>
-                    <span className="text-[9px] text-zinc-500 block">TIME SLOT</span>
-                    <span className="text-zinc-200 font-semibold">
-                      {selectedDate} • {selectedMovie.selectedTime}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[9px] text-zinc-500 block">CAFÉ TABLES</span>
-                    <span className="text-amber-300 font-bold">
-                      {selectedSeats.length > 0 ? selectedSeats.join(", ") : "WALK-IN"}
-                    </span>
-                  </div>
-                </div>
-
-                {concessionItemsList.length > 0 && (
-                  <div className="pt-2 border-t border-white/[0.07] flex items-center justify-between text-[11px]">
-                    <span className="text-zinc-400 truncate pr-2">
-                      Snacks:{" "}
-                      <strong className="text-zinc-200 font-medium">
-                        {concessionItemsList.reduce(
-                          (acc, item) => acc + (selectedConcessions[item.id] || 0),
-                          0
-                        )}{" "}
-                        items
-                      </strong>
-                      {selectedSeats.length > 0
-                        ? ` • Delivered to Seat ${selectedSeats.join(", ")}`
-                        : ""}
-                    </span>
-                    <span className="font-mono text-zinc-300 flex-shrink-0">
-                      {formatMoney(concessionsTotal)}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center pt-2 border-t border-white/10 text-[11px]">
-                  <span className="text-zinc-400">
-                    Guest: <strong className="text-zinc-200">{guestName}</strong>
-                  </span>
-                  <span className="font-mono text-zinc-400">{passCode}</span>
-                </div>
-              </div>
-
-              {/* Classic Perforated Tear-Line with Edge Notches */}
-              <div className="relative flex items-center my-0.5">
-                <span className="w-3 h-6 rounded-r-full bg-[#101115] border-y border-r border-white/12 -ml-px" />
-                <div className="flex-1 border-t border-dashed border-white/15 mx-1.5" />
-                <span className="w-3 h-6 rounded-l-full bg-[#101115] border-y border-l border-white/12 -mr-px" />
-              </div>
-
-              {/* Crisp Deterministic QR Pass Stub */}
-              <div className="p-4 pt-3 flex flex-col items-center justify-center bg-[#f4efe6] text-[#09090b]">
-                <svg
-                  className="w-20 h-20 text-[#09090b]"
-                  viewBox="0 0 21 21"
-                  shapeRendering="crispEdges"
-                  aria-label={`QR Admission Code ${passCode}`}
-                >
-                  {buildQrCells(passCode).map((rowCells, rIdx) =>
-                    rowCells.map((filled, cIdx) =>
-                      filled ? (
-                        <rect
-                          key={`${rIdx}-${cIdx}`}
-                          x={cIdx}
-                          y={rIdx}
-                          width={1}
-                          height={1}
-                          fill="currentColor"
-                        />
-                      ) : null
-                    )
-                  )}
-                </svg>
-                <span className="font-mono text-xs tracking-widest text-[#09090b] mt-2 font-bold">
-                  {passCode}
-                </span>
-                <span className="text-[10px] font-mono text-zinc-600 mt-0.5 text-center">
-                  Scan at Topsy Turvy 2nd Floor Reception • {venue.phone} / UAN {venue.mallUan}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-xs text-zinc-400">Total Paid</span>
-              <span className="text-lg font-heading font-extrabold font-mono-numbers text-white">
-                {formatMoney(grandTotal)}
-              </span>
-            </div>
-
-            {isUSD ? (
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 gap-2">
+            {/* Payment Methods */}
+            <div className="grid grid-cols-2 gap-2">
+              {paymentOptions.map((opt) => {
+                const selected = paymentMethod === opt.id;
+                return (
                   <button
+                    key={opt.id}
                     type="button"
-                    onClick={() => {
-                      setWalletAdded(true);
-                      soundEngine.playSuccessChime();
-                    }}
-                    className={`py-2.5 px-3 rounded-full font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
-                      walletAdded
-                        ? "bg-[#10b981]/20 border-[#10b981]/50 text-[#10b981]"
-                        : "bg-white/[0.08] hover:bg-white/15 text-white border-white/15"
+                    onClick={() => setPaymentMethod(opt.id)}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      selected
+                        ? "bg-[#1BA0DE]/10 border-[#1BA0DE]"
+                        : "bg-slate-50 border-slate-200 hover:bg-white"
                     }`}
                   >
-                    <span>{walletAdded ? "✓ Added to Apple Wallet" : "Add to Apple Wallet"}</span>
+                    <span className="text-xs font-heading font-extrabold block text-[#1F2A5A]">
+                      {opt.label}
+                    </span>
+                    <span className="text-[10px] text-slate-500">{opt.sub}</span>
                   </button>
+                );
+              })}
+            </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const shareText = encodeURIComponent(
-                        `*${venue.name} Digital Playland Pass*\n` +
-                          `Play Zone: ${selectedMovie.title}\n` +
-                          `Location: Packages Mall (2nd Floor)\n` +
-                          `Time Slot: ${selectedDate} @ ${selectedMovie.selectedTime}\n` +
-                          `Café Tables: ${selectedSeats.length > 0 ? selectedSeats.join(", ") : "Walk-In"}\n` +
-                          `Pass Code: ${passCode}\n` +
-                          `Total Paid: ${formatMoney(grandTotal)}`
-                      );
-                      window.open(`https://api.whatsapp.com/send?text=${shareText}`, "_blank");
-                    }}
-                    className="py-2.5 px-3 rounded-full bg-white/[0.06] hover:bg-white/12 text-zinc-200 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-white/10"
-                  >
-                    <span>Share Pass (WhatsApp / Email)</span>
-                  </button>
-                </div>
+            <button
+              type="button"
+              onClick={() => setStep("confirmed")}
+              className="w-full py-3.5 px-6 rounded-full bg-[#1FA246] hover:bg-[#19893b] text-white font-heading font-extrabold text-sm shadow-[0_12px_28px_rgba(31,162,70,0.32)] hover:shadow-[0_18px_36px_rgba(31,162,70,0.44)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.98] cursor-pointer transition-all duration-200"
+            >
+              Confirm &amp; Pay {formatPKR(payableNow)}
+            </button>
+          </div>
+        ) : (
+          /* CONFIRMED QR PASS */
+          <div className="mt-5 space-y-4 text-center">
+            <div className="p-3 rounded-2xl bg-[#1FA246]/10 border border-[#1FA246]/30 text-xs font-semibold text-[#1FA246]">
+              Show this QR at Counter 1 to print wristbands &amp; check in.
+            </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep("payment");
-                    onClose();
-                  }}
-                  className="w-full py-2.5 rounded-full bg-[#eae0c8] hover:bg-[#f4efe6] text-[#09090b] font-heading font-extrabold text-xs transition-colors cursor-pointer text-center"
-                >
-                  Done
-                </button>
+            <div className="inline-block p-4 rounded-3xl bg-white border-2 border-[#1F2A5A]/15 shadow-md">
+              <div
+                className="grid gap-[2px] bg-white"
+                style={{
+                  gridTemplateColumns: `repeat(${qrCells.length}, minmax(0, 1fr))`,
+                  width: "160px",
+                  height: "160px",
+                }}
+              >
+                {qrCells.flatMap((row, r) =>
+                  row.map((on, c) => (
+                    <div
+                      key={`${r}-${c}`}
+                      className={on ? "bg-[#1F2A5A]" : "bg-white"}
+                    />
+                  ))
+                )}
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const shareText = encodeURIComponent(
-                      `*${venue.name} Digital Playland Pass*\n` +
-                        `Play Zone: ${selectedMovie.title}\n` +
-                        `Location: Packages Mall (2nd Floor)\n` +
-                        `Time Slot: ${selectedDate} @ ${selectedMovie.selectedTime}\n` +
-                        `Café Tables: ${selectedSeats.length > 0 ? selectedSeats.join(", ") : "Walk-In"}\n` +
-                        `Pass Code: ${passCode}\n` +
-                        `Total Paid: ${formatMoney(grandTotal)}`
-                    );
-                    window.open(`https://api.whatsapp.com/send?text=${shareText}`, "_blank");
-                  }}
-                  className="py-2.5 rounded-full bg-white/[0.06] hover:bg-white/12 text-zinc-200 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-white/10"
-                >
-                  <span>Share via WhatsApp</span>
-                </button>
+            </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep("payment");
-                    onClose();
-                  }}
-                  className="py-2.5 rounded-full bg-[#eae0c8] hover:bg-[#f4efe6] text-[#09090b] font-heading font-extrabold text-xs transition-colors cursor-pointer"
-                >
-                  Done
-                </button>
-              </div>
-            )}
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 block">
+                POS Reference Code
+              </span>
+              <p className="font-mono text-lg font-extrabold text-[#1F2A5A] mt-0.5">
+                {posCode}
+              </p>
+              <p className="text-xs text-slate-600 mt-1">
+                {parentName} • {branch.shortName} • Paid {formatPKR(payableNow)}
+                {balanceAtCounter > 0
+                  ? ` (Balance at counter: ${formatPKR(balanceAtCounter)})`
+                  : ""}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="py-2.5 px-4 rounded-full bg-slate-100 hover:bg-slate-200 text-[#1F2A5A] font-heading font-bold text-xs cursor-pointer"
+              >
+                Print Pass
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="py-2.5 px-4 rounded-full bg-[#1F2A5A] text-white font-heading font-bold text-xs cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
           </div>
         )}
       </div>

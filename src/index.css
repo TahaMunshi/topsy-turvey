@@ -1,10 +1,35 @@
 @import "tailwindcss";
 
+:root {
+  --tt-navy: #1F2A5A;
+  --tt-red: #E31E3C;
+  --tt-blue: #1BA0DE;
+  --tt-green: #1FA246;
+  --tt-purple: #6A3A97;
+  --tt-yellow: #F7D41B;
+  --tt-orange: #F28C28;
+  --tt-pink: #E83E8C;
+  --tt-lime: #8CC63F;
+}
+
+.tt-rainbow-bar {
+  background: linear-gradient(
+    90deg,
+    #E31E3C 0%,
+    #F28C28 18%,
+    #F7D41B 36%,
+    #1FA246 54%,
+    #1BA0DE 72%,
+    #6A3A97 88%,
+    #E83E8C 100%
+  );
+}
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #fffbf2;
-    color: #0f172a;
+    background-color: #FFFBF5;
+    color: #1F2A5A;
     overflow-x: hidden;
     margin: 0;
     min-width: 320px;

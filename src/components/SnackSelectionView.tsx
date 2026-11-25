@@ -1,364 +1,280 @@
 import React, { useState } from "react";
 import {
-  CONCESSION_MENU,
-  getSeatSpatialData,
-  KarachiVenue,
-  MovieItem,
-} from "../constants/cinemaData";
-import { CinemaVenueMark } from "./FuturisticLogo";
-import {
-  ArrowLeftIcon,
-  PopcornIcon,
-  TicketIcon,
-} from "./Icons";
+  BranchInfo,
+  CAFE_MENU,
+  CafeCategory,
+  formatPKR,
+  GRIP_SOCKS_PKR,
+  PLAY_PASSES,
+} from "../constants/topsyData";
+import { ArrowLeftIcon, ArrowRightIcon } from "./Icons";
+import { ChildPassEntry } from "./PassBookingView";
 
 interface SnackSelectionViewProps {
-  venue: KarachiVenue;
-  selectedMovie: MovieItem;
-  selectedDate: string;
-  selectedSeats: string[];
-  selectedConcessions: Record<string, number>;
-  currency: "PKR" | "USD";
-  onToggleConcession: (id: string, delta: number) => void;
-  onBackTo3D: () => void;
+  branch: BranchInfo;
+  visitDate: string;
+  visitTime: string;
+  childrenList: ChildPassEntry[];
+  cafeCart: Record<string, number>;
+  onToggleItem: (id: string, delta: number) => void;
+  onBackToPasses: () => void;
   onProceedCheckout: () => void;
 }
 
+const CATEGORIES: Array<"ALL" | CafeCategory> = [
+  "ALL",
+  "Play Add-Ons",
+  "Snacks",
+  "Sandwiches",
+  "Juices",
+  "Treats",
+];
+
 export const SnackSelectionView: React.FC<SnackSelectionViewProps> = ({
-  venue,
-  selectedMovie,
-  selectedDate,
-  selectedSeats,
-  selectedConcessions,
-  currency,
-  onToggleConcession,
-  onBackTo3D,
+  branch,
+  visitDate,
+  visitTime,
+  childrenList,
+  cafeCart,
+  onToggleItem,
+  onBackToPasses,
   onProceedCheckout,
 }) => {
-  const [activeCategory, setActiveCategory] = useState<string>("ALL");
+  const [activeCategory, setActiveCategory] = useState<"ALL" | CafeCategory>("ALL");
 
-  const categories = ["ALL", "Safety & Gear", "Activities", "Parent Café"];
-
-  const filteredItems = CONCESSION_MENU.filter((item) => {
-    if (activeCategory === "ALL") return true;
-    return item.category === activeCategory;
-  });
-
-  const seatsTotal = selectedSeats.reduce((acc, id) => {
-    const d = getSeatSpatialData(id, venue);
-    return acc + (currency === "PKR" ? d.pricePKR : d.priceUSD);
-  }, 0);
-
-  const concessionItemsList = CONCESSION_MENU.filter(
-    (item) => (selectedConcessions[item.id] || 0) > 0
+  const filteredItems = CAFE_MENU.filter((item) =>
+    activeCategory === "ALL" ? true : item.category === activeCategory
   );
 
-  const totalSnackCount = concessionItemsList.reduce(
-    (acc, item) => acc + (selectedConcessions[item.id] || 0),
+  const passesSubtotal = childrenList.reduce((sum, c) => {
+    const pass = PLAY_PASSES.find((p) => p.id === c.passId) || PLAY_PASSES[0];
+    return sum + pass.pricePKR + (c.includeSocks ? GRIP_SOCKS_PKR : 0);
+  }, 0);
+
+  const cartItems = CAFE_MENU.filter((item) => (cafeCart[item.id] || 0) > 0);
+  const cafeTotal = cartItems.reduce(
+    (sum, item) => sum + (cafeCart[item.id] || 0) * item.pricePKR,
     0
   );
-
-  const concessionsTotal = concessionItemsList.reduce((acc, item) => {
-    const qty = selectedConcessions[item.id] || 0;
-    const unitPrice = currency === "PKR" ? item.pricePKR : item.priceUSD;
-    return acc + qty * unitPrice;
-  }, 0);
-
-  const grandTotal = seatsTotal + concessionsTotal;
-
-  const formatMoney = (val: number) =>
-    currency === "PKR" ? `Rs. ${val.toLocaleString()}` : `$${val.toFixed(2)}`;
-
-  const posterStyle = selectedMovie.posterImage
-    ? {
-        backgroundImage: `url('${selectedMovie.posterImage}')`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
-    : {
-        background: selectedMovie.gradient,
-      };
+  const cafeCount = cartItems.reduce(
+    (sum, item) => sum + (cafeCart[item.id] || 0),
+    0
+  );
+  const grandTotal = passesSubtotal + cafeTotal;
 
   return (
-    <section className="relative w-full min-h-screen lg:h-screen bg-[#fffbf2] text-slate-900 flex flex-col justify-between px-3 sm:px-8 pt-16 sm:pt-20 pb-8 lg:pb-4 select-none overflow-y-auto lg:overflow-hidden">
-      {/* Soft Sunlit Ambient Background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 20%, rgba(251, 191, 36, 0.14) 0%, rgba(56, 189, 248, 0.06) 45%, #fffbf2 85%)",
-          }}
-        />
-      </div>
+    <section className="relative w-full min-h-[100dvh] bg-[#FFFBF5] text-[#1F2A5A] pt-24 sm:pt-28 pb-12 px-5 sm:px-8 lg:px-12">
+      <div className="w-full">
+        {/* Top Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-[#1F2A5A]/10">
+          <div className="flex items-center gap-3.5">
+            <button
+              type="button"
+              onClick={onBackToPasses}
+              className="px-3.5 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-[#1F2A5A] flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <ArrowLeftIcon className="w-3.5 h-3.5" />
+              <span>Play Passes</span>
+            </button>
+            <div>
+              <h1 className="font-heading text-3xl sm:text-4xl lg:text-[42px] font-black text-[#1F2A5A] tracking-tight leading-none">
+                Parent Café &amp; Play Add-Ons
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1.5">
+                {branch.name} • Free Wi-Fi included • Exact Counter 3 prices
+              </p>
+            </div>
+          </div>
 
-      {/* Top Bar: Back Button, Clean Title & Category Filter Pills */}
-      <div className="relative z-10 w-full max-w-[1320px] mx-auto flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onBackTo3D}
-            className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 hover:text-slate-950 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
-          >
-            <ArrowLeftIcon className="w-3.5 h-3.5" />
-            <span>Back to Tables</span>
-          </button>
-
-          <div className="flex items-center gap-2.5">
-            <h1 className="font-heading font-extrabold text-base sm:text-lg tracking-tight text-slate-900 uppercase">
-              Grip Socks &amp; Parent Café
-            </h1>
-            <span className="hidden md:inline-block text-xs text-slate-500">
-              {selectedSeats.length > 0
-                ? `• Served to Café Table ${selectedSeats.join(", ")}`
-                : "• Mandatory Grip Socks, Face Painting & Café"}
-            </span>
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-full overflow-x-auto no-scrollbar shadow-sm max-w-full">
+            {CATEGORIES.map((cat) => {
+              const active = activeCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setActiveCategory(cat)}
+                  className={`text-xs px-3.5 py-1.5 rounded-full transition-all cursor-pointer whitespace-nowrap font-semibold ${
+                    active
+                      ? "bg-[#1F2A5A] text-white shadow-xs"
+                      : "text-slate-600 hover:text-[#1F2A5A]"
+                  }`}
+                >
+                  {cat === "ALL" ? "All Menu" : cat}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Category Filter Pills */}
-        <div className="flex items-center gap-1 bg-white/90 backdrop-blur-xl border border-slate-200 p-1 rounded-full overflow-x-auto no-scrollbar shadow-sm">
-          {categories.map((cat) => {
-            const active = activeCategory === cat;
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setActiveCategory(cat)}
-                className={`text-xs px-3.5 py-1 rounded-full transition-all duration-150 cursor-pointer whitespace-nowrap ${
-                  active
-                    ? "bg-amber-400 text-slate-950 font-bold shadow-xs"
-                    : "text-slate-600 hover:text-slate-950"
-                }`}
-              >
-                {cat === "ALL" ? "All Menu" : cat}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+        {/* Full-Width 12-Column Grid: Menu (Left 9) + Clean Cart (Right 3) */}
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
+            {filteredItems.map((item) => {
+              const qty = cafeCart[item.id] || 0;
+              const hasQty = qty > 0;
 
-      {/* Main 12-Column Landscape Content Area */}
-      <div className="relative z-10 w-full max-w-[1320px] mx-auto flex-1 min-h-0 my-3 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-        {/* Left 8 Columns: 3x2 Gourmet & Gear Grid */}
-        <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-3.5 h-full">
-          {filteredItems.map((item) => {
-            const qty = selectedConcessions[item.id] || 0;
-            const unitPrice = currency === "PKR" ? item.pricePKR : item.priceUSD;
-            const hasQty = qty > 0;
-
-            return (
-              <div
-                key={item.id}
-                className={`group rounded-[24px] border p-3.5 flex flex-col justify-between transition-all duration-200 min-h-[225px] lg:min-h-0 ${
-                  hasQty
-                    ? "bg-white border-amber-400 shadow-[0_12px_30px_rgba(245,158,11,0.16)]"
-                    : "bg-white/85 border-slate-200 hover:border-amber-300 hover:bg-white shadow-sm"
-                }`}
-              >
-                <div className="relative w-full flex-1 min-h-[115px] rounded-[16px] overflow-hidden bg-slate-100 border border-slate-200/70">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-
-                  <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 text-[10px] text-slate-800 font-semibold">
-                    {item.category}
-                  </span>
-
-                  {hasQty && (
-                    <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-bold shadow">
-                      {qty}× Added
+              return (
+                <div
+                  key={item.id}
+                  className={`rounded-3xl border p-3.5 flex flex-col justify-between transition-all ${
+                    hasQty
+                      ? "bg-white border-[#1FA246] shadow-[0_12px_28px_rgba(31,162,70,0.16)]"
+                      : "bg-white/90 border-slate-200 hover:border-slate-300 shadow-sm"
+                  }`}
+                >
+                  <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 border border-slate-100">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-white/90 backdrop-blur text-[10px] font-mono font-bold text-[#1F2A5A]">
+                      {item.category}
                     </span>
-                  )}
-                </div>
-
-                {/* Item Title & Description */}
-                <div className="pt-2.5">
-                  <h3 className="font-heading font-bold text-xs sm:text-[13.5px] text-slate-900 leading-snug line-clamp-1">
-                    {item.name}
-                  </h3>
-                  <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                    {item.subtitle}
-                  </p>
-                </div>
-
-                {/* Bottom Price & Quantity Stepper Row */}
-                <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <div className="flex flex-col">
-                    <span className="font-mono-numbers text-xs sm:text-[13px] font-bold text-amber-700 leading-tight">
-                      {formatMoney(unitPrice)}
-                    </span>
-                    <span className="text-[10px] text-slate-400 leading-tight mt-0.5">
-                      {hasQty
-                        ? `${qty}× • ${formatMoney(qty * unitPrice)}`
-                        : "Served at Parent Café / Desk"}
+                    <span className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-sm shadow-sm">
+                      {item.icon}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-full p-0.5">
-                    <button
-                      type="button"
-                      onClick={() => onToggleConcession(item.id, -1)}
-                      disabled={qty === 0}
-                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white hover:bg-slate-50 disabled:opacity-35 text-slate-700 font-bold flex items-center justify-center cursor-pointer transition-colors text-xs shadow-xs"
-                    >
-                      –
-                    </button>
-                    <span className="w-5 text-center text-xs font-bold font-mono-numbers text-slate-900">
-                      {qty}
+                  <div className="mt-3">
+                    <h3 className="font-heading text-sm font-extrabold text-[#1F2A5A] leading-snug">
+                      {item.name}
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                      {item.subtitle}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <span className="font-mono text-sm font-extrabold text-[#1F2A5A]">
+                      {formatPKR(item.pricePKR)}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => onToggleConcession(item.id, 1)}
-                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold flex items-center justify-center cursor-pointer transition-colors text-xs shadow-xs"
-                    >
-                      +
-                    </button>
+
+                    {qty === 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => onToggleItem(item.id, 1)}
+                        className="px-3.5 py-1.5 rounded-full bg-[#1FA246]/12 hover:bg-[#1FA246] text-[#1FA246] hover:text-white text-xs font-heading font-bold transition-colors cursor-pointer"
+                      >
+                        + Add
+                      </button>
+                    ) : (
+                      <div className="inline-flex items-center gap-2 bg-[#1F2A5A] text-white rounded-full px-2 py-1">
+                        <button
+                          type="button"
+                          onClick={() => onToggleItem(item.id, -1)}
+                          className="w-5 h-5 rounded-full hover:bg-white/15 font-bold text-xs cursor-pointer"
+                        >
+                          −
+                        </button>
+                        <span className="text-xs font-mono font-bold min-w-[14px] text-center">
+                          {qty}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => onToggleItem(item.id, 1)}
+                          className="w-5 h-5 rounded-full hover:bg-white/15 font-bold text-xs cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
 
-        {/* Right 4 Columns: Clean White Order Summary Card */}
-        <div className="lg:col-span-4 rounded-[28px] bg-white/95 backdrop-blur-2xl border border-slate-200 p-4 sm:p-5 flex flex-col justify-between shadow-xl">
-          <div className="flex flex-col gap-3 flex-1 min-h-0">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <CinemaVenueMark venue={venue} size="xs" />
-                <span className="text-[11px] uppercase tracking-[0.16em] text-slate-600 font-bold">
-                  Order Summary
-                </span>
-              </div>
-              <span
-                className="text-[10px] font-mono px-2.5 py-0.5 rounded-full border font-semibold"
-                style={{
-                  color: "#b45309",
-                  borderColor: `${venue.brandPrimary}55`,
-                  backgroundColor: `${venue.brandPrimary}18`,
-                }}
-              >
-                {venue.hallName}
+          {/* Right 3 Columns: Clean Order Summary */}
+          <div className="lg:col-span-3 p-5 rounded-3xl bg-white border border-slate-200 shadow-lg space-y-4 lg:sticky lg:top-24">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h2 className="font-heading text-base font-extrabold text-[#1F2A5A]">
+                Order Summary
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full bg-[#1FA246]/12 text-[#1FA246] text-[11px] font-bold">
+                {branch.code} · Café
               </span>
             </div>
 
-            {/* Play Zone Info Pill */}
-            <div className="flex gap-3.5 items-center p-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex-shrink-0">
-              <div className="w-12 h-16 rounded-xl bg-slate-200 border border-slate-200 overflow-hidden flex-shrink-0">
-                <div className="w-full h-full" style={posterStyle} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h4 className="font-heading font-bold text-sm text-slate-900 truncate">
-                  {selectedMovie.title}
-                </h4>
-                <p className="text-xs text-slate-500 truncate mt-0.5">
-                  {venue.name} • Packages Mall
-                </p>
-                <p className="text-[11px] text-amber-700 font-mono font-semibold mt-0.5">
-                  {selectedDate} • {selectedMovie.selectedTime}
-                </p>
-              </div>
-            </div>
-
-            {/* Tables Box */}
-            <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-3 space-y-1.5 text-xs flex-shrink-0">
-              <div className="flex justify-between items-center text-slate-500">
-                <span>Café Supervision Tables ({selectedSeats.length})</span>
-                <span className="text-slate-900 font-mono font-bold">
-                  {selectedSeats.length > 0
-                    ? selectedSeats.join(", ")
-                    : "No tables selected"}
+            <div className="space-y-2.5 text-xs sm:text-sm">
+              <div className="flex justify-between text-slate-600">
+                <span>Visit Slot</span>
+                <span className="font-semibold text-[#1F2A5A]">
+                  {visitDate} · {visitTime}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-slate-500 pt-1.5 border-t border-slate-200/70">
-                <span>Play Passes Subtotal</span>
-                <span className="text-slate-900 font-mono-numbers font-semibold">
-                  {formatMoney(seatsTotal)}
+              <div className="flex justify-between text-slate-600">
+                <span>Play Passes &amp; Socks ({childrenList.length} kids)</span>
+                <span className="font-bold text-[#1F2A5A]">
+                  {formatPKR(passesSubtotal)}
+                </span>
+              </div>
+              <div className="flex justify-between text-slate-600">
+                <span>Café &amp; Extras ({cafeCount} items)</span>
+                <span className="font-bold text-[#1F2A5A]">
+                  {formatPKR(cafeTotal)}
                 </span>
               </div>
             </div>
 
-            {/* Socks, Activities & Café Box */}
-            <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-3 flex flex-col justify-between gap-2 text-xs flex-1 min-h-0">
-              <div className="flex justify-between items-center text-slate-500 flex-shrink-0">
-                <span className="flex items-center gap-1.5">
-                  <PopcornIcon className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Socks, Face Paint &amp; Café</span>
-                </span>
-                <span className="text-slate-700 font-mono text-[11px] font-semibold">
-                  {totalSnackCount > 0 ? `${totalSnackCount} Selected` : "None"}
-                </span>
-              </div>
-
-              {concessionItemsList.length > 0 ? (
-                <div className="space-y-1.5 py-2 border-y border-slate-200/70 flex-1 overflow-y-auto no-scrollbar">
-                  {concessionItemsList.map((c) => {
-                    const qty = selectedConcessions[c.id] || 0;
-                    const unitPrice =
-                      currency === "PKR" ? c.pricePKR : c.priceUSD;
-                    return (
-                      <div
-                        key={c.id}
-                        className="flex justify-between items-center text-xs text-slate-700"
-                      >
-                        <span className="truncate pr-2">
-                          <strong className="text-amber-700 font-mono">
-                            {qty}×
-                          </strong>{" "}
-                          {c.name}
-                        </span>
-                        <span className="text-slate-900 font-mono-numbers flex-shrink-0 font-medium">
-                          {formatMoney(qty * unitPrice)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="py-2 border-y border-slate-200/70 flex-1 flex items-center text-[11px] text-slate-400">
-                  No items added yet — add Grip Socks, Face Painting, or Parent Café combos.
-                </div>
-              )}
-
-              <div className="flex justify-between items-center text-slate-500 flex-shrink-0">
-                <span>Add-ons Subtotal</span>
-                <span className="text-slate-900 font-mono-numbers font-semibold">
-                  {formatMoney(concessionsTotal)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Total & Checkout CTA */}
-          <div className="pt-3.5 mt-3 border-t border-slate-200 space-y-3 flex-shrink-0">
-            <div className="flex items-baseline justify-between">
-              <div>
-                <span className="text-xs text-slate-700 font-semibold block">
-                  Total Payable ({currency})
-                </span>
-                <span className="text-[10px] text-slate-500">
-                  Apply Vouch365 / BOGO promo in next step
-                </span>
-              </div>
-              <span className="font-heading font-extrabold text-2xl text-slate-900 font-mono-numbers">
-                {formatMoney(grandTotal)}
+            <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
+              <span className="text-xs uppercase tracking-wider text-slate-500 font-bold">
+                Grand Total
+              </span>
+              <span className="font-heading text-2xl font-black text-[#1F2A5A]">
+                {formatPKR(grandTotal)}
               </span>
             </div>
 
             <button
               type="button"
               onClick={onProceedCheckout}
-              className="w-full py-3 px-5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-heading font-extrabold text-xs sm:text-sm tracking-tight transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
+              className="w-full py-3.5 px-5 rounded-full bg-[#1FA246] hover:bg-[#19893b] text-white font-heading font-extrabold text-sm shadow-[0_12px_28px_rgba(31,162,70,0.32)] hover:shadow-[0_18px_36px_rgba(31,162,70,0.44)] hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.98] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
             >
-              <TicketIcon className="w-4 h-4 text-slate-950" />
-              <span>Continue to Payment</span>
-              <span>→</span>
+              <span>Checkout &amp; Get Counter QR</span>
+              <ArrowRightIcon className="w-4 h-4" />
             </button>
+          </div>
+        </div>
+
+        {/* Section 2: Parent Café Experience */}
+        <div className="mt-12 pt-10 border-t border-[#1F2A5A]/10">
+          <div className="mb-6">
+            <h2 className="font-heading text-xl sm:text-2xl font-extrabold text-[#1F2A5A]">
+              While Kids Play, You Relax
+            </h2>
+            <p className="text-sm text-slate-600 mt-1">
+              Everything on this menu matches our Counter 3 Café prices at {branch.shortName}.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm">
+              <h3 className="font-heading text-base font-extrabold text-[#1FA246]">
+                Free High-Speed Wi-Fi
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+                Catch up on work or unwind in our adjoining Parent Café seating area with complimentary Wi-Fi throughout your visit.
+              </p>
+            </div>
+            <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm">
+              <h3 className="font-heading text-base font-extrabold text-[#F28C28]">
+                Freshly Made Snacks &amp; Juices
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+                From club sandwiches and grilled cheese toasties to freshly squeezed orange juice, mint lemonade, and mango shakes.
+              </p>
+            </div>
+            <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm">
+              <h3 className="font-heading text-base font-extrabold text-[#1BA0DE]">
+                Pre-Order With Your Pass
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+                Bundle Grip Socks, snacks, and drinks into one Counter QR so your family order is ready as soon as you arrive.
+              </p>
+            </div>
           </div>
         </div>
       </div>
