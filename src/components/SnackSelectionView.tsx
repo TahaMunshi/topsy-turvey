@@ -37,7 +37,7 @@ export const SnackSelectionView: React.FC<SnackSelectionViewProps> = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
 
-  const categories = ["ALL", "Signature Popcorn", "Warm Bites", "Beverages"];
+  const categories = ["ALL", "Safety & Gear", "Activities", "Parent Café"];
 
   const filteredItems = CONCESSION_MENU.filter((item) => {
     if (activeCategory === "ALL") return true;
@@ -109,17 +109,17 @@ export const SnackSelectionView: React.FC<SnackSelectionViewProps> = ({
             className="px-3.5 py-1.5 rounded-full bg-[#121316]/85 hover:bg-[#1a1c22] border border-white/10 text-xs font-medium text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
           >
             <ArrowLeftIcon className="w-3.5 h-3.5" />
-            <span>Back to Seats</span>
+            <span>Back to Tables</span>
           </button>
 
           <div className="flex items-center gap-2.5">
             <h1 className="font-heading font-extrabold text-base sm:text-lg tracking-tight text-white uppercase">
-              Concessions & Drinks
+              Grip Socks &amp; Parent Café
             </h1>
             <span className="hidden md:inline-block text-xs text-zinc-400">
               {selectedSeats.length > 0
-                ? `• Delivered to Seat ${selectedSeats.join(", ")}`
-                : "• Concessions & In-Seat Service"}
+                ? `• Served to Café Table ${selectedSeats.join(", ")}`
+                : "• Mandatory Grip Socks, Face Painting & Café"}
             </span>
           </div>
         </div>
@@ -206,7 +206,7 @@ export const SnackSelectionView: React.FC<SnackSelectionViewProps> = ({
                     <span className="text-[10px] text-zinc-500 leading-tight mt-0.5">
                       {hasQty
                         ? `${qty}× • ${formatMoney(qty * unitPrice)}`
-                        : "Complimentary seat delivery"}
+                        : "Served at Parent Café / Desk"}
                     </span>
                   </div>
 
@@ -277,30 +277,30 @@ export const SnackSelectionView: React.FC<SnackSelectionViewProps> = ({
               </div>
             </div>
 
-            {/* Seats Box */}
+            {/* Tables Box */}
             <div className="rounded-2xl bg-black/30 border border-white/[0.07] p-3 space-y-1.5 text-xs flex-shrink-0">
               <div className="flex justify-between items-center text-zinc-400">
-                <span>Reserved Seats ({selectedSeats.length})</span>
+                <span>Café Supervision Tables ({selectedSeats.length})</span>
                 <span className="text-white font-mono font-bold">
                   {selectedSeats.length > 0
                     ? selectedSeats.join(", ")
-                    : "No seats selected"}
+                    : "No tables selected"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-zinc-400 pt-1.5 border-t border-white/[0.06]">
-                <span>Tickets Subtotal</span>
+                <span>Play Passes Subtotal</span>
                 <span className="text-zinc-200 font-mono-numbers font-medium">
                   {formatMoney(seatsTotal)}
                 </span>
               </div>
             </div>
 
-            {/* Concessions Box (Expands Smoothly to Fill Remaining Height) */}
+            {/* Socks, Activities & Café Box */}
             <div className="rounded-2xl bg-black/30 border border-white/[0.07] p-3 flex flex-col justify-between gap-2 text-xs flex-1 min-h-0">
               <div className="flex justify-between items-center text-zinc-400 flex-shrink-0">
                 <span className="flex items-center gap-1.5">
-                  <PopcornIcon className="w-3.5 h-3.5 text-[#eae0c8]" />
-                  <span>Concessions & Drinks</span>
+                  <PopcornIcon className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Socks, Face Paint &amp; Café</span>
                 </span>
                 <span className="text-zinc-300 font-mono text-[11px]">
                   {totalSnackCount > 0 ? `${totalSnackCount} Selected` : "None"}
@@ -338,7 +338,7 @@ export const SnackSelectionView: React.FC<SnackSelectionViewProps> = ({
               )}
 
               <div className="flex justify-between items-center text-zinc-400 flex-shrink-0">
-                <span>Concessions Subtotal</span>
+                <span>Add-ons Subtotal</span>
                 <span className="text-zinc-200 font-mono-numbers font-medium">
                   {formatMoney(concessionsTotal)}
                 </span>
@@ -354,7 +354,7 @@ export const SnackSelectionView: React.FC<SnackSelectionViewProps> = ({
                   Total Payable ({currency})
                 </span>
                 <span className="text-[10px] text-zinc-500">
-                  Includes complimentary in-seat delivery
+                  Apply Vouch365 / BOGO promo in next step
                 </span>
               </div>
               <span className="font-heading font-extrabold text-2xl text-white font-mono-numbers">

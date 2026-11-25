@@ -4,6 +4,7 @@ import {
   getSeatSpatialData,
   KarachiVenue,
   MovieItem,
+  PROMO_CODES,
 } from "../constants/cinemaData";
 import { soundEngine } from "../utils/audioEffects";
 import { CinemaVenueMark } from "./FuturisticLogo";
@@ -97,6 +98,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     isUSD ? "alex.vance@cinema.com" : "0300-8219402"
   );
   const [walletAdded, setWalletAdded] = useState<boolean>(false);
+  const [promoInput, setPromoInput] = useState<string>("");
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
 
   // Sync default payment method & contact when currency or venue changes
   React.useEffect(() => {
@@ -114,7 +117,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   if (!isOpen) return null;
 
   const seatsTotal = selectedSeats.reduce((acc, id) => {
-    const d = getSeatSpatialData(id);
+    const d = getSeatSpatialData(id, venue);
     return acc + (isUSD ? d.priceUSD : d.pricePKR);
   }, 0);
 
@@ -128,7 +131,31 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     return acc + qty * unitPrice;
   }, 0);
 
-  const grandTotal = seatsTotal + concessionsTotal;
+  const activePromoObj = PROMO_CODES.find(
+    (p) => p.code.toUpperCase() === (appliedPromo || "").toUpperCase()
+  );
+
+  let discountAmount = 0;
+  if (activePromoObj) {
+    if (activePromoObj.type === "BOGO" && selectedSeats.length > 0) {
+      const passPrices = selectedSeats
+        .map((id) => {
+          const d = getSeatSpatialData(id, venue);
+          return isUSD ? d.priceUSD : d.pricePKR;
+        })
+        .sort((a, b) => a - b);
+      if (passPrices.length >= 2) {
+        const freeCount = Math.floor(passPrices.length / 2);
+        discountAmount = passPrices.slice(0, freeCount).reduce((a, b) => a + b, 0);
+      } else {
+        discountAmount = passPrices[0] * 0.5;
+      }
+    } else if (activePromoObj.type === "PERCENT" && activePromoObj.percentOff) {
+      discountAmount = ((seatsTotal + concessionsTotal) * activePromoObj.percentOff) / 100;
+    }
+  }
+
+  const grandTotal = Math.max(0, seatsTotal + concessionsTotal - discountAmount);
 
   const formatMoney = (val: number) =>
     isUSD ? `$${val.toFixed(2)}` : `Rs. ${val.toLocaleString()}`;
@@ -194,32 +221,32 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {/* Booking Summary Box */}
             <div className="bg-black/40 border border-white/10 rounded-2xl p-4 space-y-2">
               <div className="flex justify-between text-zinc-400">
-                <span>Movie</span>
+                <span>Play Zone</span>
                 <span className="font-semibold text-white text-right">
                   {selectedMovie.title}
                 </span>
               </div>
               <div className="flex justify-between text-zinc-400">
-                <span>Theater</span>
-                <span className="text-zinc-200">
-                  {venue.name} • {venue.hallName}
+                <span>Location</span>
+                <span className="text-zinc-200 text-right">
+                  {venue.name} • Packages Mall, Lahore
                 </span>
               </div>
               <div className="flex justify-between text-zinc-400">
-                <span>Showtime</span>
-                <span className="font-mono text-[#eae0c8]">
+                <span>Time Slot</span>
+                <span className="font-mono text-amber-300">
                   {selectedDate} • {selectedMovie.selectedTime}
                 </span>
               </div>
               <div className="flex justify-between text-zinc-400 pt-2 border-t border-white/[0.07]">
-                <span>Reserved Seats ({selectedSeats.length})</span>
+                <span>Café Tables ({selectedSeats.length})</span>
                 <span className="font-semibold text-white font-mono">
-                  {selectedSeats.length > 0 ? selectedSeats.join(", ") : "General Admission"}
+                  {selectedSeats.length > 0 ? selectedSeats.join(", ") : "Walk-In Pass"}
                 </span>
               </div>
               {concessionItemsList.length > 0 && (
                 <div className="flex justify-between text-zinc-400 pt-2 border-t border-white/[0.07]">
-                  <span>Concessions</span>
+                  <span>Socks, Activities &amp; Café</span>
                   <span className="text-zinc-200 text-right">
                     {concessionItemsList
                       .map((c) => `${selectedConcessions[c.id]}x ${c.name.split(" ")[0]}`)
@@ -227,13 +254,73 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   </span>
                 </div>
               )}
+              {activePromoObj && discountAmount > 0 && (
+                <div className="flex justify-between text-emerald-300 pt-2 border-t border-white/[0.07] font-mono">
+                  <span>Promo ({activePromoObj.code})</span>
+                  <span>-{formatMoney(discountAmount)}</span>
+                </div>
+              )}
             </div>
 
-            {/* Guest Form Fields */}
+            {/* Vouch365 / BOGO Promo Code Box */}
+            <div className="bg-black/35 border border-white/10 rounded-2xl p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                  Vouch365 / BOGO Promo Code
+                </span>
+                <div className="flex items-center gap-1">
+                  {PROMO_CODES.map((p) => (
+                    <button
+                      key={p.code}
+                      type="button"
+                      onClick={() => {
+                        setPromoInput(p.code);
+                        setAppliedPromo(p.code);
+                      }}
+                      className={`text-[9px] font-mono px-2 py-0.5 rounded-full border cursor-pointer transition-colors ${
+                        appliedPromo === p.code
+                          ? "bg-emerald-400 text-[#09090b] border-emerald-300 font-bold"
+                          : "bg-white/[0.05] text-zinc-300 border-white/10 hover:border-amber-400/50"
+                      }`}
+                    >
+                      {p.code}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoInput}
+                  onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                  placeholder="Enter VOUCH365, BOGO, or PACKAGES10"
+                  className="flex-1 bg-black/50 border border-white/10 focus:border-amber-400/60 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const match = PROMO_CODES.find(
+                      (p) => p.code === promoInput.trim().toUpperCase()
+                    );
+                    setAppliedPromo(match ? match.code : null);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#09090b] font-heading font-bold text-xs cursor-pointer transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+              {activePromoObj && (
+                <p className="text-[10px] text-emerald-300 font-mono">
+                  ✓ {activePromoObj.label}: {activePromoObj.description}
+                </p>
+              )}
+            </div>
+
+            {/* Parent Form Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1.5">
-                  Guest Name
+                  Parent / Guardian Name
                 </label>
                 <input
                   type="text"
@@ -245,13 +332,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
               <div>
                 <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1.5">
-                  {isUSD ? "Email & Mobile (Apple Wallet Pass)" : "WhatsApp Ticket Number"}
+                  {isUSD ? "Email & Mobile (Wallet Pass)" : "WhatsApp Pass Number"}
                 </label>
                 <input
                   type="text"
                   value={guestContact}
                   onChange={(e) => setGuestContact(e.target.value)}
-                  placeholder={isUSD ? "alex.vance@cinema.com" : "0300-8219402"}
+                  placeholder={isUSD ? "alex.vance@playland.com" : "0300-8219402"}
                   className="w-full bg-black/40 border border-white/10 focus:border-[#eae0c8]/60 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono outline-none transition-colors"
                 />
               </div>
@@ -355,19 +442,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
                 <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/10 text-[11px] font-mono">
                   <div>
-                    <span className="text-[9px] text-zinc-500 block">HALL</span>
-                    <span className="text-zinc-200 font-semibold">{venue.hallName}</span>
+                    <span className="text-[9px] text-zinc-500 block">LOCATION</span>
+                    <span className="text-zinc-200 font-semibold">Packages Mall 2F</span>
                   </div>
                   <div>
-                    <span className="text-[9px] text-zinc-500 block">SHOWTIME</span>
+                    <span className="text-[9px] text-zinc-500 block">TIME SLOT</span>
                     <span className="text-zinc-200 font-semibold">
                       {selectedDate} • {selectedMovie.selectedTime}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[9px] text-zinc-500 block">SEATS</span>
-                    <span className="text-[#eae0c8] font-bold">
-                      {selectedSeats.length > 0 ? selectedSeats.join(", ") : "GA"}
+                    <span className="text-[9px] text-zinc-500 block">CAFÉ TABLES</span>
+                    <span className="text-amber-300 font-bold">
+                      {selectedSeats.length > 0 ? selectedSeats.join(", ") : "WALK-IN"}
                     </span>
                   </div>
                 </div>
@@ -435,9 +522,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   {passCode}
                 </span>
                 <span className="text-[10px] font-mono text-zinc-600 mt-0.5 text-center">
-                  {isUSD
-                    ? `Scan at ${venue.shortName} VIP Gate • Pass sent to ${guestContact}`
-                    : `Scan at cinema entry • Sent to ${guestContact}`}
+                  Scan at Topsy Turvy 2nd Floor Reception • {venue.phone} / UAN {venue.mallUan}
                 </span>
               </div>
             </div>

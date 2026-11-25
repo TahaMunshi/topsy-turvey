@@ -56,32 +56,60 @@ export const CinemaVenueMark: React.FC<CinemaVenueMarkProps> = ({
           </linearGradient>
         </defs>
 
-        {venue.id === "aetheria-clifton" && (
-          /* AETHERIA SEATVISION: Golden IMAX Aperture Prism & Celestial Star */
+        {(venue.id === "topsy-main" || venue.id === "aetheria-clifton") && (
+          /* TOPSY TURVY MAIN: Playful Architectural Arch, Slide Curve & Star */
           <g>
             <circle
               cx="18"
               cy="18"
               r="13.5"
               stroke={`url(#${gradId})`}
-              strokeWidth="1.5"
+              strokeWidth="1.6"
               strokeDasharray="4 2"
-              opacity="0.7"
-            />
-            <polygon
-              points="18,5 29,26 7,26"
-              stroke={`url(#${gradId})`}
-              strokeWidth="2"
-              fill={`${venue.brandPrimary}18`}
-              strokeLinejoin="round"
+              opacity="0.75"
             />
             <path
-              d="M12.5 21H23.5"
-              stroke={venue.brandPrimary}
-              strokeWidth="1.8"
+              d="M9 24C11.5 14 14.5 10 18 10C21.5 10 24.5 14 27 24"
+              stroke={`url(#${gradId})`}
+              strokeWidth="2.4"
               strokeLinecap="round"
             />
-            <circle cx="18" cy="15.5" r="2.6" fill={`url(#${gradId})`} />
+            <path
+              d="M11 20.5C15 17 21 17 25 20.5"
+              stroke={venue.brandSecondary}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <circle cx="18" cy="14" r="2.3" fill={`url(#${gradId})`} />
+          </g>
+        )}
+
+        {venue.id === "topsy-toddler-wing" && (
+          /* TODDLER WING: Soft Ball Pit Spheres & Montessori Arch */
+          <g>
+            <path
+              d="M7 22C7 14 11.8 9 18 9C24.2 9 29 14 29 22"
+              stroke={`url(#${gradId})`}
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+            <circle cx="12.5" cy="23.5" r="3" fill={venue.brandPrimary} />
+            <circle cx="18" cy="21" r="3.2" fill={venue.brandSecondary} />
+            <circle cx="23.5" cy="23.5" r="3" fill="#fbbf24" />
+          </g>
+        )}
+
+        {venue.id === "topsy-party-lounge" && (
+          /* PARTY LOUNGE: Festive Crown & Balloon Star */
+          <g>
+            <polygon
+              points="18,6 21,13 28.5,13.5 22.8,18.2 24.5,25.5 18,21.5 11.5,25.5 13.2,18.2 7.5,13.5 15,13"
+              stroke={`url(#${gradId})`}
+              strokeWidth="1.8"
+              fill={`${venue.brandPrimary}22`}
+              strokeLinejoin="round"
+            />
+            <circle cx="18" cy="16.5" r="2.2" fill={venue.brandSecondary} />
           </g>
         )}
 

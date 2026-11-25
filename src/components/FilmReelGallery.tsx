@@ -26,11 +26,11 @@ interface FilmReelGalleryProps {
 }
 
 const CLEAN_SHORT_TITLES: Record<string, string> = {
-  dune: "Dune: Part Two",
-  chrono: "F1: The Movie",
-  interstellar: "Interstellar",
-  cyberpunk: "Blade Runner 2049",
-  "maula-cyber": "Legend of Maula Jatt",
+  "soft-play-maze": "Soft-Play Maze",
+  "trampoline-climbing": "Trampoline & Climb",
+  "toddler-ball-pit": "Toddler Ball Pit",
+  "birthday-packages": "Birthday Packages",
+  "school-trips": "School Trips",
 };
 
 function getCyclicOffset(index: number, activeIndex: number, total: number): number {
@@ -157,7 +157,7 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
       {/* Left Vertical Movie Selector Bar (Sleek Poster-Thumbnail Glass Cards) */}
       <aside className="hidden md:flex flex-col gap-2.5 absolute left-5 lg:left-8 top-1/2 -translate-y-1/2 z-30 w-56 lg:w-64">
         <span className="text-[10px] font-mono tracking-[0.22em] text-zinc-400 uppercase px-2 mb-0.5">
-          Now Showing
+          Play Zones • 2nd Floor
         </span>
         {movies.map((m, idx) => {
           const isSelected = idx === activeIndex;
@@ -214,10 +214,10 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
 
       {/* Center Editorial Showcase with Enlarged Main Card */}
       <div className="relative z-20 flex-1 w-full max-w-5xl mx-auto flex flex-col items-center justify-center min-h-0 my-auto">
-        {/* Bold Editorial Date Header ("12 JUN") */}
+        {/* Bold Editorial Date Header ("ZONE 01") */}
         <div className="flex flex-col items-center mb-1.5 sm:mb-2.5">
           <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.28em] text-zinc-300 uppercase mb-0.5">
-            FEATURE PRESENTATION
+            TOPSY TURVY • PACKAGES MALL LAHORE
           </span>
           <h1 className="font-heading text-2xl xs:text-3xl sm:text-5xl font-black tracking-tight text-white drop-shadow">
             {activeMovie.releaseDateHeader}
@@ -361,7 +361,7 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
                       <div className="w-full mt-2 sm:mt-3.5 pt-2 sm:pt-3 border-t border-white/12 flex items-center justify-between gap-2 sm:gap-3">
                         <div className="min-w-0 pr-1">
                           <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-zinc-400 block truncate">
-                            Dir. {m.director}
+                            {m.director} • 11 AM – 11 PM
                           </span>
                           <span className="text-[11px] sm:text-xs font-medium text-zinc-200 truncate block mt-0.5">
                             {m.cast[0]?.name} &amp; {m.cast[1]?.name}
@@ -495,7 +495,7 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
             <span className="inline-flex" style={{ color: venue.brandPrimary }}>
               <FilmIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
             </span>
-            <span>Movies</span>
+            <span>Play Zones</span>
           </button>
 
           <button
@@ -503,7 +503,7 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
             onClick={() => onSelectMovieForOverview(activeMovie)}
             className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full hover:bg-white/10 text-[11px] sm:text-xs font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer"
           >
-            Overview
+            Zone Info
           </button>
 
           <button
@@ -512,7 +512,7 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
             className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full hover:bg-white/10 text-[11px] sm:text-xs font-medium text-zinc-300 hover:text-white transition-colors flex items-center gap-1 sm:gap-1.5 cursor-pointer"
           >
             <ArmchairIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-zinc-300" />
-            <span>Tickets</span>
+            <span>Book Table</span>
           </button>
 
           <button

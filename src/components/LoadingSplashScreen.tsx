@@ -180,12 +180,14 @@ export const LoadingSplashScreen: React.FC<LoadingSplashScreenProps> = ({
 
       {/* Bottom Architectural Footer */}
       <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono text-zinc-400 border-t border-white/[0.08] pt-4">
-        <span className="truncate pr-4">{venue.location}</span>
+        <span className="truncate pr-4">
+          {venue.location} • {venue.phone} • Mall UAN: {venue.mallUan}
+        </span>
         <span
           className="font-semibold transition-colors flex-shrink-0"
           style={{ color: venue.brandPrimary }}
         >
-          Click anywhere to enter →
+          Click anywhere to enter Playland →
         </span>
       </div>
     </div>

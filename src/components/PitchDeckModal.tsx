@@ -15,7 +15,7 @@ export const PitchDeckModal: React.FC<PitchDeckModalProps> = ({
   onSelectVenue,
   onClose,
 }) => {
-  const [categoryFilter, setCategoryFilter] = useState<"ALL" | "Pakistan" | "International">("ALL");
+  const [categoryFilter, setCategoryFilter] = useState<"ALL" | "Playland" | "Packages">("ALL");
 
   if (!isOpen) return null;
 
@@ -41,10 +41,10 @@ export const PitchDeckModal: React.FC<PitchDeckModalProps> = ({
                 className="text-[10px] font-mono uppercase tracking-[0.2em] block font-semibold"
                 style={{ color: currentVenue.brandPrimary }}
               >
-                Cinema Network Switcher
+                Topsy Turvy Wing Switcher
               </span>
               <h3 className="font-heading font-bold text-base sm:text-lg text-white mt-0.5">
-                Local &amp; International Theaters
+                2nd Floor Playland &amp; Party Wings
               </h3>
             </div>
           </div>
@@ -61,9 +61,9 @@ export const PitchDeckModal: React.FC<PitchDeckModalProps> = ({
         <div className="flex items-center gap-1.5 p-1 my-3.5 bg-black/40 rounded-full border border-white/[0.08] text-xs font-medium">
           {(
             [
-              { id: "ALL", label: `All Circuits (${KARACHI_VENUES.length})` },
-              { id: "Pakistan", label: "🇵🇰 Pakistan (6)" },
-              { id: "International", label: "🌐 Global Flagships (4)" },
+              { id: "ALL", label: `All Wings (${KARACHI_VENUES.length})` },
+              { id: "Playland", label: "Playland (2)" },
+              { id: "Packages", label: "Parties & Trips (1)" },
             ] as const
           ).map((tab) => (
             <button

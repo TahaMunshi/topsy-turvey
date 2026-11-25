@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   getSeatSpatialData,
+  getTimeSlotCrowd,
   KarachiVenue,
   MovieItem,
   PRE_RESERVED_SEATS,
@@ -31,53 +32,7 @@ interface FullScreenCinemaSimulatorProps {
   onProceedToSnacks: () => void;
 }
 
-const getAvailableDatesForMovie = (releaseDateHeader: string): string[] => {
-  const baseStr = releaseDateHeader.trim().toUpperCase();
-  const parts = baseStr.split(/\s+/);
-  const startDay = parseInt(parts[0], 10);
-  const monthStr = parts[1] || "JUN";
-  if (Number.isNaN(startDay)) {
-    return ["12 JUN", "13 JUN", "14 JUN", "15 JUN"];
-  }
-  const monthLengths: Record<string, number> = {
-    JAN: 31,
-    FEB: 28,
-    MAR: 31,
-    APR: 30,
-    MAY: 31,
-    JUN: 30,
-    JUL: 31,
-    AUG: 31,
-    SEP: 30,
-    OCT: 31,
-    NOV: 30,
-    DEC: 31,
-  };
-  const nextMonths: Record<string, string> = {
-    JAN: "FEB",
-    FEB: "MAR",
-    MAR: "APR",
-    APR: "MAY",
-    MAY: "JUN",
-    JUN: "JUL",
-    JUL: "AUG",
-    AUG: "SEP",
-    SEP: "OCT",
-    OCT: "NOV",
-    NOV: "DEC",
-    DEC: "JAN",
-  };
-  const maxDay = monthLengths[monthStr] || 30;
-  return Array.from({ length: 4 }, (_, i) => {
-    const rawDay = startDay + i;
-    if (rawDay <= maxDay) {
-      return `${String(rawDay).padStart(2, "0")} ${monthStr}`;
-    }
-    const wrappedDay = rawDay - maxDay;
-    const nextMonth = nextMonths[monthStr] || monthStr;
-    return `${String(wrappedDay).padStart(2, "0")} ${nextMonth}`;
-  });
-};
+const AVAILABLE_DAYS = ["TODAY", "TOMORROW", "SAT", "SUN"];
 
 export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps> = ({
   venue,
@@ -107,7 +62,7 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
   const blockedTimerRef = useRef<number | null>(null);
   const hudIdleTimerRef = useRef<number | null>(null);
 
-  const availableDates = getAvailableDatesForMovie(selectedMovie.releaseDateHeader);
+  const availableDates = AVAILABLE_DAYS;
 
   useEffect(() => {
     if (!openTopMenu) return;
@@ -284,7 +239,7 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
               </svg>
             </span>
             <span className="font-heading font-bold text-xs text-white leading-tight whitespace-nowrap">
-              Seat {blockedSeatNotice.seatId} is already reserved
+              Table {blockedSeatNotice.seatId} is currently occupied
             </span>
           </div>
         </div>
@@ -302,7 +257,7 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
           className="pointer-events-auto px-3.5 py-1.5 rounded-full bg-[#0d0e12]/80 hover:bg-[#171920] text-zinc-200 hover:text-white border border-white/10 backdrop-blur-xl transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-lg flex-shrink-0"
         >
           <ArrowLeftIcon className="w-3.5 h-3.5" />
-          <span>Seats</span>
+          <span>2D Map</span>
         </button>
 
         {/* Center Showtime Context Pill: Movie Name + Interactive Date & Showtime Dropdowns */}
@@ -406,6 +361,7 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
                 </div>
                 {selectedMovie.showtimes.map((time) => {
                   const isCurrent = selectedMovie.selectedTime === time;
+                  const crowd = getTimeSlotCrowd(time);
                   return (
                     <button
                       key={time}
@@ -417,12 +373,12 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
                       }}
                       className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-mono transition-colors flex items-center justify-between cursor-pointer ${
                         isCurrent
-                          ? "bg-[#eae0c8] text-[#09090b] font-bold"
+                          ? "bg-amber-400 text-[#09090b] font-bold"
                           : "text-zinc-300 hover:bg-white/[0.08] hover:text-white"
                       }`}
                     >
                       <span>{time}</span>
-                      {isCurrent && <span>✓</span>}
+                      <span className="text-[9px] opacity-80">{crowd.level}</span>
                     </button>
                   );
                 })}
@@ -507,17 +463,17 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
               }`}
             />
             <span>
-              {lightingMode === "house" ? "Close Lights" : "Open Lights"}
+              {lightingMode === "house" ? "Party Glow" : "Daylight Mall"}
             </span>
           </button>
 
-          {/* Seat POV vs Full Theatre Top Orbit Toggle */}
+          {/* Table Sightline POV vs Full 3D Playland Orbit */}
           <button
             type="button"
             onClick={() =>
               setCameraMode((prev) => (prev === "pov" ? "overview" : "pov"))
             }
-            title="Switch between Seat Eye-Level POV and Full Theatre Top View"
+            title="Switch between Parent Café Sightline POV and Full 3D Playland Orbit"
             className={`px-3.5 py-1.5 rounded-full border backdrop-blur-xl transition-all text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-lg ${
               cameraMode === "overview"
                 ? "bg-white/15 text-white border-white/30"
@@ -526,7 +482,7 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
           >
             <TheaterIcon className="w-3.5 h-3.5 text-[#eae0c8]" />
             <span>
-              {cameraMode === "overview" ? "Seat POV" : "Theatre View"}
+              {cameraMode === "overview" ? "Table Sightline" : "3D Playland"}
             </span>
           </button>
         </div>
@@ -716,16 +672,16 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="font-heading font-bold text-white text-xs sm:text-sm">
-                Seat {activeSeatData.id}
+                Table {activeSeatData.id}
               </span>
               <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-zinc-300">
-                {activeSeatData.isVIP ? "VIP" : "Standard"}
+                {activeSeatData.isVIP ? "VIP Booth" : "Café Table"}
               </span>
             </div>
             <span className="text-[11px] font-mono text-zinc-400 block truncate">
               {selectedSeats.length > 0
                 ? `${selectedSeats.join(", ")} • ${formatMoney(seatsTotal)}`
-                : `No seats selected • ${formatMoney(0)}`}
+                : `No tables selected • ${formatMoney(0)}`}
             </span>
           </div>
 
@@ -755,15 +711,15 @@ export const FullScreenCinemaSimulator: React.FC<FullScreenCinemaSimulatorProps>
               onClick={() => setIsSeatPickerOpen(true)}
               className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-white/[0.07] hover:bg-white/[0.14] text-zinc-200 hover:text-white border border-white/10 font-heading font-semibold text-[11px] sm:text-xs transition-colors cursor-pointer"
             >
-              Change Seat
+              Switch Table
             </button>
 
             <button
               type="button"
               onClick={onProceedToSnacks}
-              className="py-2 sm:py-2.5 px-3.5 sm:px-5 rounded-full bg-[#eae0c8] hover:bg-[#f4efe6] text-[#09090b] font-heading font-bold text-[11px] sm:text-xs transition-colors flex items-center gap-1 sm:gap-1.5 cursor-pointer"
+              className="py-2 sm:py-2.5 px-3.5 sm:px-5 rounded-full bg-amber-400 hover:bg-amber-300 text-[#09090b] font-heading font-bold text-[11px] sm:text-xs transition-colors flex items-center gap-1 sm:gap-1.5 cursor-pointer"
             >
-              <span>Continue</span>
+              <span>Socks &amp; Café</span>
               <ArrowRightIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#09090b]" />
             </button>
           </div>

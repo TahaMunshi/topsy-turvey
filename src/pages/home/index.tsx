@@ -49,20 +49,20 @@ const Home: React.FC = () => {
   const [selectedMovieId, setSelectedMovieId] = useState<string>(
     MOVIE_CATALOG[0].id
   );
-  const [selectedDate, setSelectedDate] = useState<string>("12 Jun");
+  const [selectedDate, setSelectedDate] = useState<string>("TODAY");
 
-  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [selectedSeats, setSelectedSeats] = useState<string[]>(["C4"]);
   const [activeSeat, setActiveSeat] = useState<string>("C4");
   const [currency, setCurrency] = useState<"PKR" | "USD">(
     () => getInitialVenue().currency
   );
-  const [venueFilter, setVenueFilter] = useState<"ALL" | "Pakistan" | "International">("ALL");
+  const [venueFilter, setVenueFilter] = useState<"ALL" | "Playland" | "Packages">("ALL");
   const [copiedPitchLink, setCopiedPitchLink] = useState<boolean>(false);
 
   const [selectedConcessions, setSelectedConcessions] = useState<
     Record<string, number>
   >({
-    "popcorn-tub": 1,
+    "grip-socks": 1,
   });
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
@@ -87,7 +87,7 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.title = `${venue.name} | 3D SeatVision Booking`;
+    document.title = `${venue.name} | Packages Mall Lahore — 3D Playland`;
   }, [venue.name]);
 
   useEffect(() => {
@@ -221,7 +221,7 @@ const Home: React.FC = () => {
                   : "text-zinc-400 hover:text-white font-normal"
               }`}
             >
-              <span>Movies</span>
+              <span>Play Zones</span>
               {currentView === "gallery" && (
                 <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[1.5px] rounded-full bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.7)]" />
               )}
@@ -236,7 +236,7 @@ const Home: React.FC = () => {
                   : "text-zinc-400 hover:text-white font-normal"
               }`}
             >
-              <span>Overview</span>
+              <span>Zone Info</span>
               {currentView === "overview" && (
                 <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[1.5px] rounded-full bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.7)]" />
               )}
@@ -252,7 +252,7 @@ const Home: React.FC = () => {
               }`}
             >
               <span>
-                Seats
+                2D Map
                 {selectedSeats.length > 0 && (
                   <span className="hidden xs:inline"> ({selectedSeats.length})</span>
                 )}
@@ -267,7 +267,7 @@ const Home: React.FC = () => {
               onClick={() => setCurrentView("3d-preview")}
               className="hidden sm:inline-block relative text-xs sm:text-[13px] tracking-wide transition-colors cursor-pointer text-zinc-400 hover:text-white font-normal"
             >
-              <span>Seat View</span>
+              <span>3D Sightline</span>
             </button>
 
             {currentView === "snacks" && (
@@ -275,7 +275,7 @@ const Home: React.FC = () => {
                 type="button"
                 className="relative text-[11px] xs:text-xs sm:text-[13px] tracking-wide text-white font-semibold transition-colors cursor-pointer"
               >
-                <span>Snacks</span>
+                <span>Socks &amp; Café</span>
                 <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[1.5px] rounded-full bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.7)]" />
               </button>
             )}
@@ -327,7 +327,7 @@ const Home: React.FC = () => {
               <div className="molten-dropdown-menu absolute top-full right-0 mt-2 w-80 sm:w-96 max-w-[calc(100vw-20px)] max-h-[calc(100dvh-80px)] rounded-[24px] p-2.5 z-50 shadow-2xl flex flex-col overflow-hidden">
                 <div className="flex-shrink-0 px-3 py-1.5 flex items-center justify-between border-b border-white/10 mb-2">
                   <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400 font-semibold">
-                    Select Cinema
+                    Packages Mall • 2nd Floor
                   </span>
                   <span
                     className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full"
@@ -340,13 +340,13 @@ const Home: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Circuit Filter Tabs */}
+                {/* Wing Filter Tabs */}
                 <div className="flex-shrink-0 flex items-center gap-1 px-1 py-1 mb-2 bg-black/40 rounded-full border border-white/[0.08] text-[10px] font-medium">
                   {(
                     [
                       { id: "ALL", label: `All (${KARACHI_VENUES.length})` },
-                      { id: "Pakistan", label: "🇵🇰 Pakistan (6)" },
-                      { id: "International", label: "🌐 Global (4)" },
+                      { id: "Playland", label: "Playland (2)" },
+                      { id: "Packages", label: "Parties (1)" },
                     ] as const
                   ).map((tab) => (
                     <button
@@ -434,8 +434,12 @@ const Home: React.FC = () => {
                   })}
                 </div>
 
-                {/* Copy Branded Deep Link Footer for Sales Demos */}
-                <div className="flex-shrink-0 pt-2 mt-2 border-t border-white/10">
+                {/* Contact Info & Share Link Footer */}
+                <div className="flex-shrink-0 pt-2 mt-2 border-t border-white/10 space-y-1.5">
+                  <div className="px-2 flex items-center justify-between text-[10px] font-mono text-zinc-400">
+                    <span>{venue.phone}</span>
+                    <span>Mall UAN: {venue.mallUan}</span>
+                  </div>
                   <button
                     type="button"
                     onClick={handleCopyPitchLink}
@@ -448,7 +452,7 @@ const Home: React.FC = () => {
                     <span className="truncate">
                       {copiedPitchLink
                         ? `✓ Copied Link for ${venue.shortName}`
-                        : "Copy Branded Pitch Link"}
+                        : "Copy Topsy Turvy Booking Link"}
                     </span>
                     <span className="text-[9px] text-zinc-500 flex-shrink-0">
                       ?venue={venue.id}

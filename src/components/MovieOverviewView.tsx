@@ -113,27 +113,21 @@ export const MovieOverviewView: React.FC<MovieOverviewViewProps> = ({
               </div>
             )}
 
-            {/* Bottom-Left Format Tag & Bottom-Right Watch Trailer Pill (hidden during playback so controls stay unobstructed) */}
-            {!isPlayingTrailer && (
-              <>
-                <div className="absolute bottom-3.5 left-3.5">
-                  <span className="px-3 py-1 rounded-full bg-[#09090b]/80 backdrop-blur-md border border-white/12 text-[10px] font-mono text-zinc-300 uppercase">
-                    {getVenueMovieBadge(venue, movie.badge)} • {getVenueAspectRatio(venue)}
-                  </span>
-                </div>
+            {/* Bottom-Left Format Tag & Bottom-Right 3D Sightline Pill */}
+            <div className="absolute bottom-3.5 left-3.5">
+              <span className="px-3 py-1 rounded-full bg-[#09090b]/80 backdrop-blur-md border border-white/12 text-[10px] font-mono text-zinc-300 uppercase">
+                {getVenueMovieBadge(venue, movie.badge)} • {getVenueAspectRatio(venue)}
+              </span>
+            </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsPlayingTrailer(true)}
-                  className="absolute bottom-3.5 right-3.5 px-3.5 py-1.5 rounded-full bg-[#09090b]/85 hover:bg-[#09090b] backdrop-blur-md border border-white/15 text-xs font-medium text-white flex items-center gap-2 shadow-lg transition-colors cursor-pointer"
-                >
-                  <span className="w-4 h-4 rounded-full bg-white/15 flex items-center justify-center text-[8px]">
-                    ▶
-                  </span>
-                  <span>Watch Trailer</span>
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              onClick={onPreview3DSightline}
+              className="absolute bottom-3.5 right-3.5 px-3.5 py-1.5 rounded-full bg-[#09090b]/85 hover:bg-[#09090b] backdrop-blur-md border border-white/15 text-xs font-medium text-white flex items-center gap-2 shadow-lg transition-colors cursor-pointer"
+            >
+              <EyeIcon className="w-3.5 h-3.5 text-amber-300" />
+              <span>3D Sightline Explorer</span>
+            </button>
           </div>
 
           {/* Right 5 Columns: Title, Synopsis, Cast Portraits & Action CTA */}
@@ -163,10 +157,10 @@ export const MovieOverviewView: React.FC<MovieOverviewViewProps> = ({
               </button>
             </div>
 
-            {/* Cast Portrait Row */}
+            {/* Zone Highlights Row */}
             <div>
               <h2 className="font-heading text-xs sm:text-sm font-bold text-white mb-2">
-                Cast
+                Zone Highlights &amp; Features
               </h2>
 
               <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
@@ -197,10 +191,10 @@ export const MovieOverviewView: React.FC<MovieOverviewViewProps> = ({
                 type="button"
                 onClick={onPreview3DSightline}
                 className="w-full sm:w-auto px-4 py-2.5 sm:py-3 rounded-full bg-[#121316] hover:bg-[#1a1c22] border border-white/10 text-xs font-medium text-zinc-300 hover:text-white transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
-                title="Preview seat view in auditorium"
+                title="Preview Parent Café sightline in 3D Playland"
               >
                 <EyeIcon className="w-4 h-4 text-zinc-400" />
-                <span>Auditorium View</span>
+                <span>3D Playland View</span>
               </button>
 
               <button
@@ -208,7 +202,7 @@ export const MovieOverviewView: React.FC<MovieOverviewViewProps> = ({
                 onClick={onProceedToBooking}
                 className="w-full sm:flex-1 py-2.5 sm:py-3 px-6 rounded-full bg-[#eae0c8] hover:bg-[#f4efe6] text-[#09090b] font-heading font-bold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Select Seats &amp; Showtimes</span>
+                <span>Pick Café Table &amp; Slot</span>
                 <ArrowRightIcon className="w-4 h-4 text-[#09090b]" />
               </button>
             </div>
