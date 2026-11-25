@@ -101,17 +101,16 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
   const activeCrowd = getTimeSlotCrowd(selectedMovie.selectedTime);
 
   return (
-    <div className="relative w-full min-h-screen lg:h-screen bg-[#09090b] text-[#f4efe6] flex flex-col justify-between px-2 sm:px-8 pt-16 sm:pt-20 pb-6 lg:pb-3 select-none overflow-y-auto lg:overflow-hidden">
-      {/* Dynamic Full-Bleed Blurred Playland Ambient Background */}
+    <div className="relative w-full min-h-screen lg:h-screen bg-[#fffbf2] text-slate-900 flex flex-col justify-between px-2 sm:px-8 pt-16 sm:pt-20 pb-6 lg:pb-3 select-none overflow-y-auto lg:overflow-hidden">
+      {/* Soft Sunlit Playland Ambient Background */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <img
-          key={selectedMovie.id}
-          src={selectedMovie.posterImage}
-          alt=""
-          aria-hidden="true"
-          className="w-full h-full object-cover object-center scale-110 blur-[70px] saturate-150 opacity-35 transition-all duration-700"
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 18%, rgba(251, 191, 36, 0.14) 0%, rgba(16, 185, 129, 0.06) 45%, #fffbf2 85%)",
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#09090b]/65 via-[#09090b]/55 to-[#09090b]/92" />
       </div>
 
       {/* 1. TOP HEADER BAR */}
@@ -120,17 +119,17 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
           <button
             type="button"
             onClick={onBackToOverview}
-            className="px-3.5 py-1.5 rounded-full bg-[#121316]/85 hover:bg-[#1a1c22] backdrop-blur-md border border-white/10 text-xs font-medium text-zinc-200 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer flex-shrink-0"
+            className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 hover:text-slate-950 transition-colors flex items-center gap-1.5 cursor-pointer flex-shrink-0 shadow-sm"
           >
             <ArrowLeftIcon className="w-3.5 h-3.5" />
             <span>Back</span>
           </button>
 
           <div className="flex items-baseline gap-2.5 truncate">
-            <h1 className="font-heading text-sm sm:text-base lg:text-lg font-extrabold tracking-wide text-white uppercase truncate">
+            <h1 className="font-heading text-sm sm:text-base lg:text-lg font-extrabold tracking-wide text-slate-900 uppercase truncate">
               {selectedMovie.title}
             </h1>
-            <span className="hidden md:inline text-xs text-zinc-400">
+            <span className="hidden md:inline text-xs text-slate-500">
               • 2nd Floor Playland &amp; Parent Café
             </span>
           </div>
@@ -145,14 +144,14 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
                 setIsDateMenuOpen((prev) => !prev);
                 setIsSeatModalOpen(false);
               }}
-              className="px-3.5 py-1.5 rounded-full bg-[#121316]/85 hover:bg-[#1a1c22] backdrop-blur-md border border-white/12 text-xs font-medium text-zinc-200 flex items-center gap-2 cursor-pointer transition-colors"
+              className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 flex items-center gap-2 cursor-pointer transition-colors shadow-sm"
             >
               <span>{selectedDate}</span>
-              <span className="text-[10px] text-zinc-500">▾</span>
+              <span className="text-[10px] text-slate-400">▾</span>
             </button>
 
             {isDateMenuOpen && (
-              <div className="absolute right-0 mt-2 w-36 rounded-2xl bg-[#121316]/95 backdrop-blur-2xl border border-white/15 p-1.5 shadow-2xl z-50 animate-fade-in">
+              <div className="absolute right-0 mt-2 w-36 rounded-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 p-1.5 shadow-xl z-50 animate-fade-in">
                 {AVAILABLE_DAYS.map((d) => (
                   <button
                     key={d}
@@ -163,8 +162,8 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
                     }}
                     className={`w-full text-left px-3 py-2 rounded-xl text-xs font-mono transition-colors flex items-center justify-between cursor-pointer ${
                       selectedDate.toUpperCase() === d
-                        ? "bg-amber-400 text-[#09090b] font-bold"
-                        : "text-zinc-300 hover:bg-white/[0.06] hover:text-white"
+                        ? "bg-amber-400 text-slate-950 font-bold"
+                        : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
                     }`}
                   >
                     <span>{d}</span>
@@ -182,23 +181,23 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
               setIsSeatModalOpen(true);
               setIsDateMenuOpen(false);
             }}
-            className="px-3.5 py-1.5 rounded-full bg-[#121316]/85 hover:bg-[#1a1c22] backdrop-blur-md border border-white/12 text-xs font-medium text-zinc-200 flex items-center gap-2 cursor-pointer transition-colors"
+            className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 flex items-center gap-2 cursor-pointer transition-colors shadow-sm"
           >
             <span>
               {selectedSeats.length === 0
                 ? "Pick Tables"
                 : `${selectedSeats.length} ${selectedSeats.length === 1 ? "Table" : "Tables"}`}
             </span>
-            <span className="text-[10px] text-zinc-500">▾</span>
+            <span className="text-[10px] text-slate-400">▾</span>
           </button>
 
           {/* 3D Sightline View Button */}
           <button
             type="button"
             onClick={onProceedToPreview}
-            className="px-3.5 py-1.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 backdrop-blur-md border border-amber-400/35 text-xs font-medium text-amber-200 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 border border-amber-300 text-xs font-semibold text-amber-900 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
-            <EyeIcon className="w-3.5 h-3.5 text-amber-300" />
+            <EyeIcon className="w-3.5 h-3.5 text-amber-700" />
             <span className="hidden sm:inline">3D Sightline ({activeSeat})</span>
           </button>
         </div>
@@ -208,20 +207,20 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
       <div className="relative z-10 flex-1 w-full max-w-[1320px] mx-auto flex flex-col items-center justify-between py-2">
         {/* 2nd Floor Playland Interactive Zones Banner */}
         <div className="relative w-full max-w-5xl flex flex-col items-center">
-          <div className="w-[96%] sm:w-[90%] grid grid-cols-3 gap-1.5 sm:gap-2.5 p-1.5 sm:p-2 rounded-2xl bg-[#121316]/85 border border-white/15 shadow-[0_14px_40px_rgba(0,0,0,0.65)]">
+          <div className="w-[96%] sm:w-[90%] grid grid-cols-3 gap-1.5 sm:gap-2.5 p-1.5 sm:p-2 rounded-2xl bg-white/90 border border-slate-200 shadow-md">
             <button
               type="button"
               onClick={() => setHighlightedZone("toddler")}
               className={`rounded-xl px-2 py-1.5 sm:py-2 text-center transition-all cursor-pointer border ${
                 highlightedZone === "toddler"
-                  ? "bg-emerald-500/25 border-emerald-400/70 shadow-[0_0_20px_rgba(16,185,129,0.22)]"
-                  : "bg-emerald-500/10 border-emerald-400/25 hover:bg-emerald-500/20"
+                  ? "bg-emerald-100 border-emerald-400 shadow-sm"
+                  : "bg-emerald-50/70 border-emerald-200 hover:bg-emerald-100/70"
               }`}
             >
-              <span className="text-[9px] sm:text-[11px] font-heading font-bold text-emerald-300 block truncate">
+              <span className="text-[9px] sm:text-[11px] font-heading font-bold text-emerald-900 block truncate">
                 Toddler Ball Pit &amp; Mini Kitchens
               </span>
-              <span className="text-[8px] sm:text-[9px] font-mono text-emerald-200/75 hidden sm:block">
+              <span className="text-[8px] sm:text-[9px] font-mono text-emerald-700 hidden sm:block">
                 Best Sightline: Tables A1–B4
               </span>
             </button>
@@ -231,14 +230,14 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
               onClick={() => setHighlightedZone("maze")}
               className={`rounded-xl px-2 py-1.5 sm:py-2 text-center transition-all cursor-pointer border ${
                 highlightedZone === "maze"
-                  ? "bg-amber-500/25 border-amber-400/70 shadow-[0_0_20px_rgba(245,158,11,0.22)]"
-                  : "bg-amber-500/10 border-amber-400/25 hover:bg-amber-500/20"
+                  ? "bg-amber-100 border-amber-400 shadow-sm"
+                  : "bg-amber-50/70 border-amber-200 hover:bg-amber-100/70"
               }`}
             >
-              <span className="text-[9px] sm:text-[11px] font-heading font-bold text-amber-300 block truncate">
+              <span className="text-[9px] sm:text-[11px] font-heading font-bold text-amber-900 block truncate">
                 Multi-Level Soft-Play Maze
               </span>
-              <span className="text-[8px] sm:text-[9px] font-mono text-amber-200/75 hidden sm:block">
+              <span className="text-[8px] sm:text-[9px] font-mono text-amber-700 hidden sm:block">
                 Best Sightline: VIP Booths C3–D6
               </span>
             </button>
@@ -248,28 +247,28 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
               onClick={() => setHighlightedZone("trampoline")}
               className={`rounded-xl px-2 py-1.5 sm:py-2 text-center transition-all cursor-pointer border ${
                 highlightedZone === "trampoline"
-                  ? "bg-sky-500/25 border-sky-400/70 shadow-[0_0_20px_rgba(56,189,248,0.22)]"
-                  : "bg-sky-500/10 border-sky-400/25 hover:bg-sky-500/20"
+                  ? "bg-sky-100 border-sky-400 shadow-sm"
+                  : "bg-sky-50/70 border-sky-200 hover:bg-sky-100/70"
               }`}
             >
-              <span className="text-[9px] sm:text-[11px] font-heading font-bold text-sky-300 block truncate">
+              <span className="text-[9px] sm:text-[11px] font-heading font-bold text-sky-900 block truncate">
                 Trampoline &amp; Climbing Wall
               </span>
-              <span className="text-[8px] sm:text-[9px] font-mono text-sky-200/75 hidden sm:block">
+              <span className="text-[8px] sm:text-[9px] font-mono text-sky-700 hidden sm:block">
                 Best Sightline: Tables A5–B8
               </span>
             </button>
           </div>
 
           <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-[9px] font-mono tracking-[0.22em] text-amber-300/90 uppercase">
+            <span className="text-[9px] font-mono tracking-[0.22em] text-amber-800 uppercase font-semibold">
               GLASS SIGHTLINE PARTITION • PARENT CAFÉ SUPERVISION DECK
             </span>
-            <span className="text-[8px] font-mono text-zinc-600 hidden sm:inline">•</span>
+            <span className="text-[8px] font-mono text-slate-400 hidden sm:inline">•</span>
             <button
               type="button"
               onClick={onProceedToPreview}
-              className="text-[9px] font-mono text-amber-300 hover:text-white underline underline-offset-2 hidden sm:inline cursor-pointer"
+              className="text-[9px] font-mono font-semibold text-amber-700 hover:text-amber-950 underline underline-offset-2 hidden sm:inline cursor-pointer"
             >
               Launch 3D Explorer →
             </button>
@@ -291,9 +290,9 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
                 key={row}
                 className="w-full flex items-center justify-center gap-1 xs:gap-1.5 sm:gap-3"
               >
-                <div className="w-8 sm:w-12 text-right font-mono text-[9px] sm:text-[10px] text-zinc-400">
-                  <span className="font-bold text-zinc-300">{row}</span>
-                  <span className="hidden sm:inline text-zinc-500"> {rowTag}</span>
+                <div className="w-8 sm:w-12 text-right font-mono text-[9px] sm:text-[10px] text-slate-500">
+                  <span className="font-bold text-slate-700">{row}</span>
+                  <span className="hidden sm:inline text-slate-400"> {rowTag}</span>
                 </div>
 
                 <div className="flex items-center justify-center gap-1 xs:gap-1.5 sm:gap-2.5 lg:gap-3.5">
@@ -322,14 +321,14 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
                           }
                           className={`group relative w-7 xs:w-8 sm:w-14 md:w-16 lg:w-20 xl:w-22 h-7 xs:h-8 sm:h-9 lg:h-10 rounded-xl flex flex-col items-center justify-center border transition-all duration-200 cursor-pointer ${
                             isReserved
-                              ? "bg-[#2a0c12] border-[#991b1b]/55 text-[#fca5a5]/70 opacity-85 cursor-not-allowed"
+                              ? "bg-rose-50 border-rose-200 text-rose-400 opacity-85 cursor-not-allowed"
                               : isSelected
-                              ? "bg-gradient-to-b from-amber-300 to-amber-500 text-[#09090b] border-amber-200 font-bold scale-[1.05] shadow-[0_4px_16px_rgba(245,158,11,0.35)] z-10"
+                              ? "bg-gradient-to-b from-amber-300 to-amber-400 text-slate-950 border-amber-500 font-bold scale-[1.05] shadow-md z-10"
                               : isBestSightline
-                              ? "bg-[#16201b] hover:bg-[#1e2d26] border-emerald-400/65 text-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.2)]"
+                              ? "bg-emerald-50 hover:bg-emerald-100 border-emerald-400 text-emerald-900 shadow-sm"
                               : isVIP
-                              ? "bg-[#1a1610] hover:bg-[#251f15] border-amber-400/35 hover:border-amber-300/70 text-amber-200"
-                              : "bg-[#12141a] hover:bg-[#1a1d26] border-white/12 hover:border-white/30 text-zinc-300"
+                              ? "bg-amber-50/70 hover:bg-amber-100/80 border-amber-300 text-amber-900"
+                              : "bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 shadow-xs"
                           }`}
                         >
                           <span className="text-[8px] xs:text-[9px] sm:text-[11px] font-mono font-semibold leading-none">
@@ -338,10 +337,10 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
                           <span
                             className={`hidden sm:block text-[7px] font-mono uppercase mt-0.5 leading-none ${
                               isSelected
-                                ? "text-[#09090b]/75 font-bold"
+                                ? "text-slate-900 font-bold"
                                 : isVIP
-                                ? "text-amber-300/70"
-                                : "text-zinc-500"
+                                ? "text-amber-700"
+                                : "text-slate-400"
                             }`}
                           >
                             {isReserved ? "Busy" : isVIP ? "Booth" : "Table"}
@@ -364,10 +363,10 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
           })}
 
           {/* 2nd Floor Landmarks Strip */}
-          <div className="w-[96%] sm:w-[90%] max-w-5xl mt-1.5 flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.07] text-[9px] sm:text-[10px] font-mono text-zinc-400">
+          <div className="w-[96%] sm:w-[90%] max-w-5xl mt-1.5 flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-slate-200 text-[9px] sm:text-[10px] font-mono text-slate-600 shadow-xs">
             <span>🧦 Check-In &amp; Grip Socks Desk</span>
-            <span className="hidden sm:inline text-emerald-300/90">
-              ● Highlighted tables = Best sightline for selected zone
+            <span className="hidden sm:inline text-emerald-700 font-semibold">
+              ● Green tables = Best sightline for selected zone
             </span>
             <span>☕ Espresso Bar &amp; Free Wi-Fi</span>
           </div>
@@ -379,9 +378,9 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
         {/* Left: Time Slots (11:00 AM - 11:00 PM) with Crowd Levels */}
         <div className="flex items-center gap-1.5 flex-wrap">
           <div className="flex items-center gap-1.5 mr-1">
-            <span className="text-xs font-medium text-zinc-400">Slots:</span>
+            <span className="text-xs font-semibold text-slate-600">Slots:</span>
             <span
-              className={`text-[9px] font-mono px-2 py-0.5 rounded-full border ${activeCrowd.colorClass}`}
+              className="text-[9px] font-mono px-2 py-0.5 rounded-full border bg-white border-slate-200 text-slate-700 font-semibold"
             >
               {activeCrowd.level} ({activeCrowd.pct}%)
             </span>
@@ -397,8 +396,8 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
                   onClick={() => onSelectShowtime(time)}
                   className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
                     isSelected
-                      ? "bg-[#1d1f26] text-white border border-amber-400/60 font-semibold"
-                      : "bg-[#121316]/85 text-zinc-400 hover:text-zinc-200 border border-white/10"
+                      ? "bg-amber-400 text-slate-950 border border-amber-500 font-bold shadow-sm"
+                      : "bg-white text-slate-600 hover:text-slate-950 border border-slate-200"
                   }`}
                 >
                   <span
@@ -413,46 +412,46 @@ export const SeatSelectionView: React.FC<SeatSelectionViewProps> = ({
         </div>
 
         {/* Center: Legend & Socks/Café Link */}
-        <div className="hidden xl:flex items-center gap-3 text-xs text-zinc-400">
+        <div className="hidden xl:flex items-center gap-3 text-xs text-slate-600">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded bg-[#12141a] border border-white/25" />
+            <span className="w-2.5 h-2.5 rounded bg-white border border-slate-300" />
             <span>Café Table</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded bg-[#1a1610] border border-amber-400/50" />
+            <span className="w-2.5 h-2.5 rounded bg-amber-50 border border-amber-400" />
             <span>VIP Booth</span>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded bg-amber-400" />
-            <span className="text-zinc-200">Selected</span>
+            <span className="text-slate-900 font-semibold">Selected</span>
           </span>
-          <span className="text-zinc-700">|</span>
+          <span className="text-slate-300">|</span>
           <button
             type="button"
             onClick={onProceedToSnacks}
-            className="text-zinc-300 hover:text-white flex items-center gap-1.5 cursor-pointer transition-colors"
+            className="text-slate-700 hover:text-slate-950 font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
           >
-            <PopcornIcon className="w-3.5 h-3.5 text-amber-300" />
+            <PopcornIcon className="w-3.5 h-3.5 text-amber-600" />
             <span>Grip Socks &amp; Café</span>
           </button>
         </div>
 
         {/* Right: Split-Pill Book Pass & Table CTA */}
-        <div className="w-full sm:w-auto min-w-0 sm:min-w-[290px] rounded-full bg-[#121316]/95 border border-white/15 p-1 flex items-center justify-between shadow-2xl">
+        <div className="w-full sm:w-auto min-w-0 sm:min-w-[290px] rounded-full bg-white border border-slate-200 p-1 flex items-center justify-between shadow-lg">
           <button
             type="button"
             disabled={selectedSeats.length === 0}
             onClick={onBuyTicketsDirect}
-            className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-[#09090b] font-heading font-bold text-xs sm:text-sm transition-colors cursor-pointer"
+            className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-slate-950 font-heading font-bold text-xs sm:text-sm transition-colors cursor-pointer"
           >
             Book Pass &amp; Table
           </button>
 
           <div className="px-3 sm:px-4 py-1 text-right flex flex-col items-end justify-center">
-            <span className="font-mono-numbers text-sm sm:text-base font-bold text-white leading-tight">
+            <span className="font-mono-numbers text-sm sm:text-base font-bold text-slate-900 leading-tight">
               {formatMoney(seatsTotal)}
             </span>
-            <span className="text-[10px] font-mono text-zinc-400 leading-tight">
+            <span className="text-[10px] font-mono text-slate-500 leading-tight">
               {selectedSeats.length > 0 ? `Tables: ${selectedSeats.join(", ")}` : "Pick a table"}
             </span>
           </div>

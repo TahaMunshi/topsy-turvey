@@ -62,29 +62,22 @@ export const LoadingSplashScreen: React.FC<LoadingSplashScreenProps> = ({
           handleDismiss();
         }
       }}
-      className={`fixed inset-0 z-50 bg-[#09090b] text-[#f4efe6] flex flex-col justify-between p-6 sm:p-10 select-none transition-opacity duration-350 cursor-pointer overflow-hidden ${
+      className={`fixed inset-0 z-50 bg-[#fffbf2] text-slate-900 flex flex-col justify-between p-6 sm:p-10 select-none transition-opacity duration-350 cursor-pointer overflow-hidden ${
         fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
     >
-      {/* Personalized Cinema Brand Ambient Glow Backdrop */}
+      {/* Sunlit Pastel Ambient Glow Backdrop */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
         <div
           className="absolute inset-0 transition-all duration-700"
           style={{
-            background: `radial-gradient(circle at 50% 46%, ${venue.brandPrimary}26 0%, ${venue.brandSecondary}12 32%, ${venue.brandBgTint} 65%, #09090b 100%)`,
-          }}
-        />
-        {/* Subtle Anamorphic Horizontal Brand Flare */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[1px] opacity-45 blur-[1px]"
-          style={{
-            background: `linear-gradient(90deg, transparent 0%, ${venue.brandPrimary} 50%, transparent 100%)`,
+            background: `radial-gradient(circle at 50% 46%, ${venue.brandPrimary}22 0%, ${venue.brandSecondary}18 35%, #fffbf2 75%)`,
           }}
         />
       </div>
 
       {/* Top Architectural Frame Bar */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono tracking-[0.2em] text-zinc-400 uppercase border-b border-white/[0.08] pb-4">
+      <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono tracking-[0.2em] text-slate-500 uppercase border-b border-slate-900/10 pb-4">
         <div className="flex items-center gap-2.5">
           <span
             className="w-2 h-2 rounded-full animate-pulse"
@@ -93,9 +86,9 @@ export const LoadingSplashScreen: React.FC<LoadingSplashScreenProps> = ({
               boxShadow: `0 0 10px ${venue.brandPrimary}`,
             }}
           />
-          <span className="text-white font-semibold">{venue.name}</span>
+          <span className="text-slate-900 font-bold">{venue.name}</span>
         </div>
-        <span className="hidden sm:inline text-zinc-400">
+        <span className="hidden sm:inline text-slate-600">
           {venue.hallName} • {venue.screenSpecs}
         </span>
         <span
@@ -146,16 +139,16 @@ export const LoadingSplashScreen: React.FC<LoadingSplashScreenProps> = ({
           {venue.hallName}
         </span>
 
-        <h1 className="font-heading text-3xl sm:text-5xl font-extrabold tracking-tight text-white uppercase">
+        <h1 className="font-heading text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 uppercase">
           {venue.name}
         </h1>
 
-        <p className="text-xs sm:text-sm text-zinc-300 mt-2.5 max-w-md leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-600 mt-2.5 max-w-md leading-relaxed">
           {venue.splashSubtitle}
         </p>
 
         {/* Brand-Colored Progress Bar */}
-        <div className="w-56 h-[2px] bg-white/10 rounded-full mt-8 overflow-hidden relative">
+        <div className="w-56 h-1 bg-slate-200 rounded-full mt-8 overflow-hidden relative">
           <div
             className="h-full rounded-full transition-all duration-75 ease-linear"
             style={{
@@ -166,20 +159,20 @@ export const LoadingSplashScreen: React.FC<LoadingSplashScreenProps> = ({
           />
         </div>
 
-        <div className="mt-3 flex items-center gap-3 text-[11px] font-mono text-zinc-400">
+        <div className="mt-3 flex items-center gap-3 text-[11px] font-mono text-slate-500">
           <span
             className="font-bold tabular-nums"
-            style={{ color: venue.brandPrimary }}
+            style={{ color: "#d97706" }}
           >
             {String(progress).padStart(3, "0")}%
           </span>
-          <span className="text-zinc-600">•</span>
-          <span className="text-zinc-300">{venue.soundSpecs}</span>
+          <span className="text-slate-300">•</span>
+          <span className="text-slate-600">{venue.soundSpecs}</span>
         </div>
       </div>
 
       {/* Bottom Architectural Footer */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono text-zinc-400 border-t border-white/[0.08] pt-4">
+      <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono text-slate-500 border-t border-slate-900/10 pt-4">
         <span className="truncate pr-4">
           {venue.location} • {venue.phone} • Mall UAN: {venue.mallUan}
         </span>

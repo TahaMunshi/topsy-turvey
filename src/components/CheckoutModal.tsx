@@ -178,28 +178,28 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
       onClick={() => {
         setStep("payment");
         onClose();
       }}
     >
       <div
-        className="bg-[#101115]/95 backdrop-blur-2xl border border-white/15 rounded-[28px] max-w-lg w-full p-4 sm:p-6 max-h-[92dvh] overflow-y-auto relative my-auto shadow-[0_28px_80px_rgba(0,0,0,0.85)]"
+        className="bg-white/95 backdrop-blur-2xl border border-slate-200 rounded-[28px] max-w-lg w-full p-4 sm:p-6 max-h-[92dvh] overflow-y-auto relative my-auto shadow-2xl text-slate-900"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
           <div className="flex items-center gap-3">
             <CinemaVenueMark venue={venue} size="md" />
             <div>
               <span
-                className="text-[10px] font-mono uppercase tracking-[0.2em] block font-semibold"
-                style={{ color: venue.brandPrimary }}
+                className="text-[10px] font-mono uppercase tracking-[0.2em] block font-bold"
+                style={{ color: "#b45309" }}
               >
-                {step === "confirmed" ? "Digital Admission Pass" : "Checkout"}
+                {step === "confirmed" ? "Digital Playland Pass" : "Checkout"}
               </span>
-              <h3 className="font-heading font-bold text-base sm:text-lg text-white mt-0.5">
+              <h3 className="font-heading font-bold text-base sm:text-lg text-slate-900 mt-0.5">
                 {step === "confirmed" ? "Booking Confirmed" : "Complete Reservation"}
               </h3>
             </div>
@@ -210,7 +210,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               setStep("payment");
               onClose();
             }}
-            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/12 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white text-xs transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 text-xs transition-colors cursor-pointer"
           >
             ✕
           </button>
@@ -219,35 +219,35 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         {step === "payment" ? (
           <div className="my-4 space-y-4 text-xs">
             {/* Booking Summary Box */}
-            <div className="bg-black/40 border border-white/10 rounded-2xl p-4 space-y-2">
-              <div className="flex justify-between text-zinc-400">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
+              <div className="flex justify-between text-slate-500">
                 <span>Play Zone</span>
-                <span className="font-semibold text-white text-right">
+                <span className="font-bold text-slate-900 text-right">
                   {selectedMovie.title}
                 </span>
               </div>
-              <div className="flex justify-between text-zinc-400">
+              <div className="flex justify-between text-slate-500">
                 <span>Location</span>
-                <span className="text-zinc-200 text-right">
+                <span className="text-slate-800 text-right">
                   {venue.name} • Packages Mall, Lahore
                 </span>
               </div>
-              <div className="flex justify-between text-zinc-400">
+              <div className="flex justify-between text-slate-500">
                 <span>Time Slot</span>
-                <span className="font-mono text-amber-300">
+                <span className="font-mono text-amber-700 font-semibold">
                   {selectedDate} • {selectedMovie.selectedTime}
                 </span>
               </div>
-              <div className="flex justify-between text-zinc-400 pt-2 border-t border-white/[0.07]">
+              <div className="flex justify-between text-slate-500 pt-2 border-t border-slate-200">
                 <span>Café Tables ({selectedSeats.length})</span>
-                <span className="font-semibold text-white font-mono">
+                <span className="font-bold text-slate-900 font-mono">
                   {selectedSeats.length > 0 ? selectedSeats.join(", ") : "Walk-In Pass"}
                 </span>
               </div>
               {concessionItemsList.length > 0 && (
-                <div className="flex justify-between text-zinc-400 pt-2 border-t border-white/[0.07]">
+                <div className="flex justify-between text-slate-500 pt-2 border-t border-slate-200">
                   <span>Socks, Activities &amp; Café</span>
-                  <span className="text-zinc-200 text-right">
+                  <span className="text-slate-800 text-right font-medium">
                     {concessionItemsList
                       .map((c) => `${selectedConcessions[c.id]}x ${c.name.split(" ")[0]}`)
                       .join(", ")}
@@ -255,7 +255,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 </div>
               )}
               {activePromoObj && discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-300 pt-2 border-t border-white/[0.07] font-mono">
+                <div className="flex justify-between text-emerald-700 pt-2 border-t border-slate-200 font-mono font-bold">
                   <span>Promo ({activePromoObj.code})</span>
                   <span>-{formatMoney(discountAmount)}</span>
                 </div>
@@ -263,9 +263,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
 
             {/* Vouch365 / BOGO Promo Code Box */}
-            <div className="bg-black/35 border border-white/10 rounded-2xl p-3 space-y-2">
+            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-amber-900 font-bold">
                   Vouch365 / BOGO Promo Code
                 </span>
                 <div className="flex items-center gap-1">
@@ -279,8 +279,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       }}
                       className={`text-[9px] font-mono px-2 py-0.5 rounded-full border cursor-pointer transition-colors ${
                         appliedPromo === p.code
-                          ? "bg-emerald-400 text-[#09090b] border-emerald-300 font-bold"
-                          : "bg-white/[0.05] text-zinc-300 border-white/10 hover:border-amber-400/50"
+                          ? "bg-emerald-500 text-white border-emerald-600 font-bold"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-amber-400"
                       }`}
                     >
                       {p.code}
@@ -294,7 +294,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   value={promoInput}
                   onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
                   placeholder="Enter VOUCH365, BOGO, or PACKAGES10"
-                  className="flex-1 bg-black/50 border border-white/10 focus:border-amber-400/60 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
+                  className="flex-1 bg-white border border-slate-200 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono outline-none"
                 />
                 <button
                   type="button"
@@ -304,13 +304,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     );
                     setAppliedPromo(match ? match.code : null);
                   }}
-                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#09090b] font-heading font-bold text-xs cursor-pointer transition-colors"
+                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-heading font-bold text-xs cursor-pointer transition-colors"
                 >
                   Apply
                 </button>
               </div>
               {activePromoObj && (
-                <p className="text-[10px] text-emerald-300 font-mono">
+                <p className="text-[10px] text-emerald-700 font-mono font-semibold">
                   ✓ {activePromoObj.label}: {activePromoObj.description}
                 </p>
               )}
@@ -319,7 +319,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {/* Parent Form Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1.5 font-semibold">
                   Parent / Guardian Name
                 </label>
                 <input
@@ -327,19 +327,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
                   placeholder={isUSD ? "e.g. Alexander Vance" : "e.g. Taha Jawed"}
-                  className="w-full bg-black/40 border border-white/10 focus:border-[#eae0c8]/60 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none transition-colors"
+                  className="w-full bg-white border border-slate-200 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 outline-none transition-colors"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1.5 font-semibold">
                   {isUSD ? "Email & Mobile (Wallet Pass)" : "WhatsApp Pass Number"}
                 </label>
                 <input
                   type="text"
                   value={guestContact}
                   onChange={(e) => setGuestContact(e.target.value)}
-                  placeholder={isUSD ? "alex.vance@playland.com" : "0300-8219402"}
-                  className="w-full bg-black/40 border border-white/10 focus:border-[#eae0c8]/60 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono outline-none transition-colors"
+                  placeholder={isUSD ? "parent@topsyturvy.pk" : "0300-8219402"}
+                  className="w-full bg-white border border-slate-200 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-mono outline-none transition-colors"
                 />
               </div>
             </div>
@@ -347,11 +347,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {/* Payment Method Selector */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">
                   Payment Method {isUSD ? "(Global Gateway)" : "(Local Gateway)"}
                 </span>
-                <span className="text-[10px] font-mono text-zinc-400">
-                  Currency: <strong className="text-white">{isUSD ? "USD ($)" : "PKR (Rs.)"}</strong>
+                <span className="text-[10px] font-mono text-slate-500">
+                  Currency: <strong className="text-slate-900">{isUSD ? "USD ($)" : "PKR (Rs.)"}</strong>
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -364,8 +364,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       onClick={() => setPaymentMethod(pm.id as PaymentMethod)}
                       className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                         active
-                          ? "bg-[#eae0c8] border-[#eae0c8] text-[#09090b] shadow-[0_0_15px_rgba(234,224,200,0.35)]"
-                          : "bg-black/35 border-white/10 text-zinc-300 hover:border-white/25 hover:bg-white/[0.04]"
+                          ? "bg-amber-400 border-amber-500 text-slate-950 shadow-sm"
+                          : "bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-white"
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
@@ -373,8 +373,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         <span
                           className={`text-[8px] font-mono px-1 py-0.2 rounded ${
                             active
-                              ? "bg-black/20 text-[#09090b] font-bold"
-                              : "bg-white/10 text-zinc-400"
+                              ? "bg-black/15 text-slate-950 font-bold"
+                              : "bg-slate-200 text-slate-600"
                           }`}
                         >
                           {pm.badge}
@@ -382,7 +382,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       </div>
                       <span
                         className={`text-[10px] block mt-1 leading-tight ${
-                          active ? "text-[#09090b]/80 font-medium" : "text-zinc-500"
+                          active ? "text-slate-900 font-medium" : "text-slate-500"
                         }`}
                       >
                         {pm.sub}
@@ -394,12 +394,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
 
             {/* Total and Checkout CTA */}
-            <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-4">
+            <div className="pt-4 border-t border-slate-200 flex items-center justify-between gap-4">
               <div>
-                <span className="text-[10px] text-zinc-400 block font-mono">
+                <span className="text-[10px] text-slate-500 block font-mono">
                   Total Payable ({paymentMethod})
                 </span>
-                <span className="text-xl font-heading font-extrabold font-mono-numbers text-white">
+                <span className="text-xl font-heading font-extrabold font-mono-numbers text-slate-900">
                   {formatMoney(grandTotal)}
                 </span>
               </div>
@@ -409,9 +409,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   soundEngine.playSuccessChime();
                   setStep("confirmed");
                 }}
-                className="px-6 py-3 rounded-full bg-[#eae0c8] hover:bg-[#f4efe6] text-[#09090b] font-heading font-extrabold text-xs transition-all cursor-pointer shadow-lg"
+                className="px-6 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-heading font-extrabold text-xs transition-all cursor-pointer shadow-md"
               >
-                Confirm & Issue Pass →
+                Confirm &amp; Issue Pass →
               </button>
             </div>
           </div>

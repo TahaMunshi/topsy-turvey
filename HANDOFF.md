@@ -85,7 +85,7 @@ npm run lint                                     # ESLint check
 
 ### Phase 1: Brand, Theme & Real Assets (Immediate)
 1. **Light / Family-Friendly Theme Overhaul:**
-   * Replace `#09090b` dark backgrounds across [index.html](index.html) and all views with a bright, warm palette (e.g., `#fffdf7` / `#f8fafc` surfaces, `#0f172a` ink, playful amber/emerald/sky accents).
+   * *(Completed)* Converted [index.html](index.html), [src/index.css](src/index.css), and all primary views (`FilmReelGallery`, `MovieOverviewView`, `SeatSelectionView`, `SnackSelectionView`, `CheckoutModal`, `LoadingSplashScreen`) to a bright, warm sunlit `#fffbf2` family-friendly palette with frosted white glass pills and amber/emerald/sky accents.
 2. **Replace Stock Photography:**
    * Replace all Unsplash URLs in [src/constants/cinemaData.ts](src/constants/cinemaData.ts) with real, high-res photos of Topsy Turvy Packages Mall (stored in `public/images/zones/` and `public/images/cafe/`).
    * Add the official Topsy Turvy logo in `public/images/` and [FuturisticLogo.tsx](src/components/FuturisticLogo.tsx).

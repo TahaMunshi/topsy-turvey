@@ -140,23 +140,22 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen bg-[#09090b] text-[#f4efe6] flex flex-col justify-between pt-20 pb-3 px-4 sm:px-8 overflow-hidden select-none">
-      {/* Dynamic Full-Bleed Blurred Movie Poster Ambient Background */}
+    <div className="relative w-full h-screen bg-[#fffbf2] text-slate-900 flex flex-col justify-between pt-20 pb-3 px-4 sm:px-8 overflow-hidden select-none">
+      {/* Soft Pastel Ambient Background */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <img
           key={activeMovie.id}
-          src={activeMovie.posterImage || "/images/posters/dune-part-two.jpg"}
+          src={activeMovie.posterImage}
           alt=""
           aria-hidden="true"
-          className="w-full h-full object-cover object-center scale-110 blur-[60px] saturate-150 opacity-55 transition-all duration-700"
+          className="w-full h-full object-cover object-center scale-110 blur-[80px] saturate-150 opacity-20 transition-all duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#09090b]/45 via-[#09090b]/25 to-[#09090b]/85" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,transparent_18%,rgba(9,9,11,0.75)_88%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#fffbf2]/80 via-[#fffbf2]/65 to-[#fffbf2]/95" />
       </div>
 
-      {/* Left Vertical Movie Selector Bar (Sleek Poster-Thumbnail Glass Cards) */}
+      {/* Left Vertical Play Zone Selector Bar */}
       <aside className="hidden md:flex flex-col gap-2.5 absolute left-5 lg:left-8 top-1/2 -translate-y-1/2 z-30 w-56 lg:w-64">
-        <span className="text-[10px] font-mono tracking-[0.22em] text-zinc-400 uppercase px-2 mb-0.5">
+        <span className="text-[10px] font-mono tracking-[0.22em] text-slate-500 uppercase px-2 mb-0.5 font-semibold">
           Play Zones • 2nd Floor
         </span>
         {movies.map((m, idx) => {
@@ -170,21 +169,21 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
               onClick={() => setActiveIndex(idx)}
               className={`group w-full text-left p-2 rounded-2xl transition-all duration-200 flex items-center justify-between gap-3 cursor-pointer border ${
                 isSelected
-                  ? "bg-white/15 backdrop-blur-2xl border-white/35 text-white shadow-[0_14px_34px_rgba(0,0,0,0.55),inset_0_1px_1px_rgba(255,255,255,0.35)] scale-[1.02]"
-                  : "bg-[#121316]/70 hover:bg-[#1a1c22]/85 backdrop-blur-md text-zinc-300 hover:text-white border-white/10"
+                  ? "bg-white backdrop-blur-2xl border-amber-400 text-slate-900 shadow-[0_12px_28px_rgba(245,158,11,0.18)] scale-[1.02]"
+                  : "bg-white/75 hover:bg-white backdrop-blur-md text-slate-700 hover:text-slate-950 border-slate-200/80 shadow-sm"
               }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <img
-                  src={m.posterImage || "/images/posters/dune-part-two.jpg"}
+                  src={m.posterImage}
                   alt={shortTitle}
-                  className="w-10 h-12 rounded-xl object-cover flex-shrink-0 border border-white/15"
+                  className="w-10 h-12 rounded-xl object-cover flex-shrink-0 border border-slate-200"
                 />
                 <div className="min-w-0">
-                  <span className="text-xs sm:text-[13px] font-heading font-bold truncate block text-white">
+                  <span className="text-xs sm:text-[13px] font-heading font-bold truncate block text-slate-900">
                     {shortTitle}
                   </span>
-                  <span className="text-[11px] text-zinc-400 truncate block mt-0.5">
+                  <span className="text-[11px] text-slate-500 truncate block mt-0.5">
                     {m.genre.split("/")[0].trim()} • ★ {m.imdbScore}
                   </span>
                 </div>
@@ -195,14 +194,14 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
                   isSelected
                     ? {
                         backgroundColor: venue.brandPrimary,
-                        color: "#09090b",
+                        color: "#0f172a",
                       }
                     : undefined
                 }
                 className={`text-[10px] font-mono px-2.5 py-1 rounded-full flex-shrink-0 ${
                   isSelected
                     ? "font-bold shadow-sm"
-                    : "bg-white/[0.05] text-zinc-400"
+                    : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {m.releaseDateHeader}
@@ -214,12 +213,12 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
 
       {/* Center Editorial Showcase with Enlarged Main Card */}
       <div className="relative z-20 flex-1 w-full max-w-5xl mx-auto flex flex-col items-center justify-center min-h-0 my-auto">
-        {/* Bold Editorial Date Header ("ZONE 01") */}
+        {/* Bold Editorial Header ("ZONE 01") */}
         <div className="flex flex-col items-center mb-1.5 sm:mb-2.5">
-          <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.28em] text-zinc-300 uppercase mb-0.5">
+          <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.28em] text-amber-700 uppercase mb-0.5 font-semibold">
             TOPSY TURVY • PACKAGES MALL LAHORE
           </span>
-          <h1 className="font-heading text-2xl xs:text-3xl sm:text-5xl font-black tracking-tight text-white drop-shadow">
+          <h1 className="font-heading text-2xl xs:text-3xl sm:text-5xl font-black tracking-tight text-slate-900">
             {activeMovie.releaseDateHeader}
           </h1>
         </div>
@@ -444,25 +443,25 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
             <button
               type="button"
               onClick={handlePrevMovie}
-              aria-label="Previous Film"
-              className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#121316]/90 hover:bg-[#1a1c22] backdrop-blur-md border border-white/20 flex items-center justify-center text-zinc-200 hover:text-white transition-all hover:scale-105 cursor-pointer shadow-2xl"
+              aria-label="Previous Zone"
+              className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white backdrop-blur-md border border-slate-200 flex items-center justify-center text-slate-700 hover:text-slate-950 transition-all hover:scale-105 cursor-pointer shadow-xl"
             >
               <ArrowLeftIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             </button>
 
-            {/* Next Film Arrow Button */}
+            {/* Next Zone Arrow Button */}
             <button
               type="button"
               onClick={handleNextMovie}
-              aria-label="Next Film"
-              className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#121316]/90 hover:bg-[#1a1c22] backdrop-blur-md border border-white/20 flex items-center justify-center text-zinc-200 hover:text-white transition-all hover:scale-105 cursor-pointer shadow-2xl"
+              aria-label="Next Zone"
+              className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white backdrop-blur-md border border-slate-200 flex items-center justify-center text-slate-700 hover:text-slate-950 transition-all hover:scale-105 cursor-pointer shadow-xl"
             >
               <ArrowRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             </button>
           </div>
         </div>
 
-        {/* Mobile-Only Compact Selector Strip (Hidden on Desktop where Left Bar is shown) */}
+        {/* Mobile-Only Compact Selector Strip */}
         <div className="flex md:hidden mt-2 items-center gap-1.5 overflow-x-auto no-scrollbar max-w-full px-2 py-0.5">
           {movies.map((m, idx) => {
             const isSelected = idx === activeIndex;
@@ -474,8 +473,8 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
                 onClick={() => setActiveIndex(idx)}
                 className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isSelected
-                    ? "bg-[#eae0c8] text-[#09090b] shadow-sm"
-                    : "bg-[#121316]/80 text-zinc-300 border border-white/10"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "bg-white/85 text-slate-700 border border-slate-200"
                 }`}
               >
                 {shortTitle}
@@ -490,9 +489,9 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
         <div className="sleek-glass-pill inline-flex items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-full">
           <button
             type="button"
-            className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/15 border border-white/25 text-[11px] sm:text-xs font-semibold text-white flex items-center gap-1 sm:gap-1.5 cursor-pointer"
+            className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-[11px] sm:text-xs font-bold text-slate-900 flex items-center gap-1 sm:gap-1.5 cursor-pointer"
           >
-            <span className="inline-flex" style={{ color: venue.brandPrimary }}>
+            <span className="inline-flex" style={{ color: "#d97706" }}>
               <FilmIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
             </span>
             <span>Play Zones</span>
@@ -501,7 +500,7 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
           <button
             type="button"
             onClick={() => onSelectMovieForOverview(activeMovie)}
-            className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full hover:bg-white/10 text-[11px] sm:text-xs font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer"
+            className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full hover:bg-slate-900/5 text-[11px] sm:text-xs font-medium text-slate-600 hover:text-slate-950 transition-colors cursor-pointer"
           >
             Zone Info
           </button>
@@ -509,16 +508,16 @@ export const FilmReelGallery: React.FC<FilmReelGalleryProps> = ({
           <button
             type="button"
             onClick={() => onBookMovieDirect(activeMovie)}
-            className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full hover:bg-white/10 text-[11px] sm:text-xs font-medium text-zinc-300 hover:text-white transition-colors flex items-center gap-1 sm:gap-1.5 cursor-pointer"
+            className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full hover:bg-slate-900/5 text-[11px] sm:text-xs font-medium text-slate-600 hover:text-slate-950 transition-colors flex items-center gap-1 sm:gap-1.5 cursor-pointer"
           >
-            <ArmchairIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-zinc-300" />
+            <ArmchairIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-slate-600" />
             <span>Book Table</span>
           </button>
 
           <button
             type="button"
             onClick={onOpenPitchModal || handleCycleVenue}
-            className="px-2 sm:px-3 py-1 rounded-full hover:bg-white/10 text-[11px] sm:text-xs font-medium text-zinc-200 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-2 sm:px-3 py-1 rounded-full hover:bg-slate-900/5 text-[11px] sm:text-xs font-medium text-slate-700 hover:text-slate-950 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <CinemaVenueMark venue={venue} size="xs" />
             <span className="hidden xs:inline">{venue.shortName}</span>

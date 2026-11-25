@@ -378,21 +378,21 @@ export const FuturisticLogo: React.FC<FuturisticLogoProps> = ({
       {/* Clean Theater Name & Brand-Tinted Hall Badge */}
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="font-heading font-extrabold text-[11px] sm:text-xs tracking-tight text-white group-hover:opacity-90 transition-opacity truncate max-w-[90px] xs:max-w-[120px] sm:max-w-none">
+          <span className="font-heading font-extrabold text-[11px] sm:text-xs tracking-tight text-slate-900 group-hover:opacity-85 transition-opacity truncate max-w-[90px] xs:max-w-[120px] sm:max-w-none">
             {venue.name}
           </span>
           <span
             className="hidden xs:inline-block text-[8px] sm:text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full border transition-colors leading-none flex-shrink-0"
             style={{
-              color: venue.brandPrimary,
-              borderColor: `${venue.brandPrimary}45`,
-              backgroundColor: `${venue.brandPrimary}14`,
+              color: "#b45309",
+              borderColor: `${venue.brandPrimary}66`,
+              backgroundColor: `${venue.brandPrimary}20`,
             }}
           >
             {venue.badgeText}
           </span>
         </div>
-        <p className="hidden sm:block text-[10px] text-zinc-400 mt-0.5 leading-none truncate">
+        <p className="hidden sm:block text-[10px] text-slate-500 mt-0.5 leading-none truncate">
           {venue.hallName}
         </p>
       </div>

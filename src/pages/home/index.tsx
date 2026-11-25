@@ -187,7 +187,7 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#09090b] text-[#f4efe6] select-none">
+    <div className="min-h-screen flex flex-col bg-[#fffbf2] text-slate-900 select-none">
       {/* Personalized Cinema Brand Splash Screen */}
       {showSplash && (
         <LoadingSplashScreen
@@ -210,20 +210,20 @@ const Home: React.FC = () => {
             />
           </div>
 
-          {/* PILL 2 (CENTER): Sleek Minimalist Navigation Bar (Screenshot 2 Style) */}
+          {/* PILL 2 (CENTER): Sleek Minimalist Navigation Bar */}
           <nav className="sleek-glass-pill pointer-events-auto flex items-center gap-3 xs:gap-4 sm:gap-6 md:gap-8 px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full">
             <button
               type="button"
               onClick={() => setCurrentView("gallery")}
               className={`relative text-[11px] xs:text-xs sm:text-[13px] tracking-wide transition-colors cursor-pointer ${
                 currentView === "gallery"
-                  ? "text-white font-semibold"
-                  : "text-zinc-400 hover:text-white font-normal"
+                  ? "text-slate-900 font-bold"
+                  : "text-slate-500 hover:text-slate-900 font-medium"
               }`}
             >
               <span>Play Zones</span>
               {currentView === "gallery" && (
-                <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[1.5px] rounded-full bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.7)]" />
+                <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[2px] rounded-full bg-amber-500" />
               )}
             </button>
 
@@ -232,13 +232,13 @@ const Home: React.FC = () => {
               onClick={() => setCurrentView("overview")}
               className={`relative text-[11px] xs:text-xs sm:text-[13px] tracking-wide transition-colors cursor-pointer ${
                 currentView === "overview"
-                  ? "text-white font-semibold"
-                  : "text-zinc-400 hover:text-white font-normal"
+                  ? "text-slate-900 font-bold"
+                  : "text-slate-500 hover:text-slate-900 font-medium"
               }`}
             >
               <span>Zone Info</span>
               {currentView === "overview" && (
-                <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[1.5px] rounded-full bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.7)]" />
+                <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[2px] rounded-full bg-amber-500" />
               )}
             </button>
 
@@ -247,8 +247,8 @@ const Home: React.FC = () => {
               onClick={() => setCurrentView("seats")}
               className={`relative text-[11px] xs:text-xs sm:text-[13px] tracking-wide transition-colors cursor-pointer ${
                 currentView === "seats"
-                  ? "text-white font-semibold"
-                  : "text-zinc-400 hover:text-white font-normal"
+                  ? "text-slate-900 font-bold"
+                  : "text-slate-500 hover:text-slate-900 font-medium"
               }`}
             >
               <span>
@@ -258,14 +258,14 @@ const Home: React.FC = () => {
                 )}
               </span>
               {currentView === "seats" && (
-                <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[1.5px] rounded-full bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.7)]" />
+                <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[2px] rounded-full bg-amber-500" />
               )}
             </button>
 
             <button
               type="button"
               onClick={() => setCurrentView("3d-preview")}
-              className="hidden sm:inline-block relative text-xs sm:text-[13px] tracking-wide transition-colors cursor-pointer text-zinc-400 hover:text-white font-normal"
+              className="hidden sm:inline-block relative text-xs sm:text-[13px] tracking-wide transition-colors cursor-pointer text-slate-500 hover:text-slate-900 font-medium"
             >
               <span>3D Sightline</span>
             </button>
@@ -273,41 +273,41 @@ const Home: React.FC = () => {
             {currentView === "snacks" && (
               <button
                 type="button"
-                className="relative text-[11px] xs:text-xs sm:text-[13px] tracking-wide text-white font-semibold transition-colors cursor-pointer"
+                className="relative text-[11px] xs:text-xs sm:text-[13px] tracking-wide text-slate-900 font-bold transition-colors cursor-pointer"
               >
                 <span>Socks &amp; Café</span>
-                <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[1.5px] rounded-full bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.7)]" />
+                <span className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-[2px] rounded-full bg-amber-500" />
               </button>
             )}
           </nav>
 
-          {/* PILL 3 (RIGHT): Sleek Cinema Logo + Currency Switcher + Dropdown Arrow */}
+          {/* PILL 3 (RIGHT): Sleek Wing Logo + Currency Switcher + Dropdown Arrow */}
           <div ref={dropdownRef} className="relative pointer-events-auto flex items-center gap-1.5 sm:gap-2">
             {/* Direct Currency Toggle Pill */}
             <button
               type="button"
               onClick={() => setCurrency((prev) => (prev === "PKR" ? "USD" : "PKR"))}
-              className="sleek-glass-pill rounded-full px-2.5 py-1.5 flex items-center gap-1.5 text-[10px] font-mono font-bold text-[#eae0c8] hover:text-white transition-all cursor-pointer shadow-sm group"
+              className="sleek-glass-pill rounded-full px-2.5 py-1.5 flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-700 hover:text-slate-950 transition-all cursor-pointer shadow-sm group"
               title={`Switch currency between PKR and USD (Current: ${currency})`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${currency === "USD" ? "bg-emerald-400" : "bg-amber-400"}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${currency === "USD" ? "bg-emerald-500" : "bg-amber-500"}`} />
               <span>{currency}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setIsCinemaDropdownOpen((prev) => !prev)}
-              aria-label="Switch Cinema Theater"
+              aria-label="Switch Playland Wing"
               aria-expanded={isCinemaDropdownOpen}
               className="sleek-glass-pill rounded-full p-1.5 sm:px-2.5 sm:py-1.5 flex items-center gap-1.5 sm:gap-2 cursor-pointer group transition-all"
             >
               <CinemaVenueMark venue={venue} size="xs" />
-              <span className="hidden md:inline text-xs font-semibold text-zinc-200 group-hover:text-white truncate max-w-[110px]">
+              <span className="hidden md:inline text-xs font-semibold text-slate-800 group-hover:text-slate-950 truncate max-w-[110px]">
                 {venue.shortName}
               </span>
               <svg
-                className={`w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-transform duration-200 ease-out ${
-                  isCinemaDropdownOpen ? "rotate-180 text-white" : "rotate-0"
+                className={`w-3.5 h-3.5 text-slate-500 group-hover:text-slate-900 transition-transform duration-200 ease-out ${
+                  isCinemaDropdownOpen ? "rotate-180 text-slate-900" : "rotate-0"
                 }`}
                 fill="none"
                 viewBox="0 0 24 24"
@@ -340,8 +340,7 @@ const Home: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Wing Filter Tabs */}
-                <div className="flex-shrink-0 flex items-center gap-1 px-1 py-1 mb-2 bg-black/40 rounded-full border border-white/[0.08] text-[10px] font-medium">
+                <div className="flex-shrink-0 flex items-center gap-1 px-1 py-1 mb-2 bg-slate-100 rounded-full border border-slate-200 text-[10px] font-medium">
                   {(
                     [
                       { id: "ALL", label: `All (${KARACHI_VENUES.length})` },
@@ -355,8 +354,8 @@ const Home: React.FC = () => {
                       onClick={() => setVenueFilter(tab.id)}
                       className={`flex-1 py-1 px-1.5 rounded-full text-center transition-all cursor-pointer truncate ${
                         venueFilter === tab.id
-                          ? "bg-[#eae0c8] text-[#09090b] font-bold shadow"
-                          : "text-zinc-400 hover:text-white"
+                          ? "bg-amber-400 text-slate-950 font-bold shadow-sm"
+                          : "text-slate-600 hover:text-slate-900"
                       }`}
                     >
                       {tab.label}
@@ -377,27 +376,27 @@ const Home: React.FC = () => {
                         style={
                           isSelected
                             ? {
-                                background: `linear-gradient(135deg, ${v.brandPrimary}26 0%, ${v.brandBgTint} 100%)`,
-                                borderColor: `${v.brandPrimary}80`,
+                                background: `linear-gradient(135deg, ${v.brandPrimary}22 0%, #fffbf2 100%)`,
+                                borderColor: `${v.brandPrimary}99`,
                               }
                             : undefined
                         }
                         className={`w-full p-2.5 rounded-2xl border text-left transition-all duration-200 flex items-center justify-between gap-2.5 cursor-pointer ${
                           isSelected
-                            ? "text-white shadow-lg"
-                            : "bg-white/[0.03] hover:bg-white/[0.08] border-white/[0.07] hover:border-white/20 text-zinc-300"
+                            ? "text-slate-900 shadow-sm"
+                            : "bg-white/70 hover:bg-white border-slate-200 hover:border-amber-300 text-slate-700"
                         }`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <CinemaVenueMark venue={v} size="sm" />
                           <div className="min-w-0">
-                            <span className="font-heading font-bold text-xs block truncate text-white">
+                            <span className="font-heading font-bold text-xs block truncate text-slate-900">
                               {v.name}
                             </span>
-                            <span className="text-[10px] block text-zinc-400 truncate mt-0.5">
+                            <span className="text-[10px] block text-slate-600 truncate mt-0.5">
                               {v.hallName}
                             </span>
-                            <span className="text-[9px] block text-zinc-500 font-mono truncate">
+                            <span className="text-[9px] block text-slate-400 font-mono truncate">
                               {v.city}, {v.country}
                             </span>
                           </div>
