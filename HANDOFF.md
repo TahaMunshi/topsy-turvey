@@ -63,6 +63,11 @@ npm run build                                    # TypeScript check (tsc -b) + V
 npm run lint                                     # ESLint check
 ```
 
+### Vercel Deployment
+* Configured via [vercel.json](vercel.json) (`framework: "vite"`, `buildCommand: "npm run build"`, `outputDirectory: "dist"`, and SPA rewrite `/(.*) -> /index.html`).
+* **Option 1 (Git Integration — Recommended):** Import `TahaMunshi/topsy-turvey` in the Vercel Dashboard (`main` branch auto-deploys on push).
+* **Option 2 (CLI):** Run `npx vercel --prod` from the project root.
+
 ### Active File Map (`src/`)
 | File | Current Role |
 | :--- | :--- |
